@@ -1,0 +1,7 @@
+import(std)
+
+fn main() => {
+    let call = "hello world";
+    print(call);
+    return 0;
+}
