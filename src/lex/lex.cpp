@@ -113,13 +113,13 @@ namespace lex
             }
             if(CUR(src) == '*' && NXT(src) == '/'){
                 if(!comment_block){
-                    fprintf(stderr,"wrong comment symbol :: %d",i);
+                    fprintf(stderr, "wrong comment symbol :: %d", i);
                 }
                 comment_block = false;
                 i+=2;
                 continue;
             }
-            if(CUR(src) == '/'&& NXT(src) == '*'){
+            if(CUR(src) == '/' && NXT(src) == '*'){
                 comment_block = true;
                 i+=2;
                 continue;
@@ -132,13 +132,34 @@ namespace lex
                 comment_line = true;
                 i++;
             }
-            if()
+
+            //string
+            if(isalpha(src[i])&&) {
+
+            }
 
         }
         
     }
 
+    int is_keyword_or_id(std::string &src) {
+        if(src == token[FOR])return FOR;
+        if(src == token[IF])return IF;
+        if(src == token[ELIF])return ELIF;
+        if(src == token[ELSE])return ELSE;
+        if(src == token[FN])return FN;
+        if(src == token[WHILE])return WHILE;
+        if(src == token[STRUCT])return STRUCT;
+        if(src == token[NIL])return NIL;
+        if(src == token[IN])return IN;
+        if(src == token[CONTINUE])return CONTINUE;
+        if(src == token[TRUE])return TRUE;
+        if(src == token[FALSE])return FALSE;
+        if(src == token[CONST])return CONST;
+        if(src == token[BREAK])return BREAK;
 
-    bool is
+
+    }
+
 
 }
