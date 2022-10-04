@@ -1,0 +1,7 @@
+import(std)
+
+fn main() => {
+   let i = 0;
+   let s = "hello"
+   return 0;
+}
