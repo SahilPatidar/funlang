@@ -15,11 +15,10 @@ namespace lex
         FLOAT,
         IDEN,
 
-        LET,
         CONST,
         FN,
         FOR,
-        IN,
+        VAR,
         WHILE,
         RETURN,
         CONTINUE,
@@ -31,6 +30,20 @@ namespace lex
         ELIF,
         ELSE,
         STRUCT,
+        ENUM,
+        STRING,
+        I8,
+        I16,
+        I32,
+        I64,
+        UI8,
+        UI16,
+        UI32,
+        UI64,
+        F32,
+        F64,
+
+
 
         ASSN,
         ADD,
