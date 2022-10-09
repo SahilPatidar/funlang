@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include "../../include/lex/lex.hpp"
-
+#include "../../include/Error.hpp"
 namespace lex
 {
     extern const char *token[_LAST] = {
@@ -104,28 +104,32 @@ namespace lex
         "<FEOF>",
         "<INVALID>"};
 
-    #define CUR(src) (src[i])
-    #define NXT(src) (i < end?src[i+1]:0)
-    #define PRV(src) (str_len > 0&&i > 0?src[i-1]:0)
+    #define CUR (src[i])
+    #define NXT (i < str_len?src[i+1]:0)
+    #define PRV (str_len > 0&&i > 0?src[i-1]:0)
     int get_keyword(std::string &src);
     std::string get_string(std::string &src, int &i);
-    tok_t tokenizer(const std::string &src, tok_t& toks,int begin, int end){
+    bool tokenizer(const std::string &src, tok_t& toks,int begin, int end){
         ssize_t i = begin;
         bool comment_line = false;
         bool comment_block = false;
+
         size_t str_len = src.size();
 
         while(i < end){
             if(comment_line){
-                if(CUR(src) == '\n')comment_line=false;
+                if(CUR == '\n')comment_line=false;
                 ++i;
                 continue;
+            }
+            if(CUR=='\n'){
+
             }
             if(isspace(src[i])){
                 i++;
                 continue;
             }
-            if(CUR(src) == '*' && NXT(src) == '/'){
+            if(CUR == '*' && NXT == '/'){
                 if(!comment_block){
                     fprintf(stderr, "wrong comment symbol :: %d", i);
                 }
@@ -133,7 +137,7 @@ namespace lex
                 i+=2;
                 continue;
             }
-            if(CUR(src) == '/' && NXT(src) == '*'){
+            if(CUR == '/' && NXT == '*'){
                 comment_block = true;
                 i+=2;
                 continue;
@@ -142,25 +146,63 @@ namespace lex
                 i++;
                 continue;
             }
-            if(CUR(src) == '/'&& NXT(src) == '/'){
+            if(CUR == '/'&& NXT == '/'){
                 comment_line = true;
                 i++;
             }
 
             //string
-            if(isalpha(src[i])&&!isalnum(PRV(src))) {
+            if(isalpha(src[i])&&!isalnum(PRV)) {
 
             }
 
-            //const string
-            if(isalpha(src[i])&&!isalnum(PRV(src))) {
+            if(isdigit(src[i])){
+                int base = 10;
+                Token_type type;
+                std::string str;
+                if(!get_num(src, i, base, str, type)){
+                    printf("error: number\n");
+                    return false;
+                }
 
+            }
+
+            if(CUR == '\"'||CUR == '\'') {
+                std::string str;
+                char quote = '\"';
+                if(!get_const_string(src, i, quote, str)){
+                    printf("error in const string %d\n",i);
+                }
+                toks.emplace_back(i - str.length(),str, quote=='\"'?STR:CHAR);
+                continue;
             }
 
         }
-        
-    }
 
+        return true;
+    }
+    // bool tokenize(const std::string &src, ssize_t begin, ssize_t end, tok_t&toks){
+    //     ssize_t i = begin;
+    //     bool comment_block = false;
+    //     while(i < end){
+    //         switch(CUR){
+    //             case '/':
+    //             {
+    //                 if(NXT == '*'){
+    //                     comment_block = true;
+    //                     i+=2;
+    //                     break;
+    //                 }
+    //             }
+    //             case '*':
+    //             {
+
+    //             }
+    //         }
+    //     }
+
+    //     return true;
+    // }
     int get_keyword(std::string &src) {
         if(src == token[FOR])return FOR;
         if(src == token[IF])return IF;
@@ -189,12 +231,127 @@ namespace lex
         return IDEN;
     }
 
-    std::string get_string(std::string &src, int &i){
-        while(i < src.size()){
-            
+    bool get_const_string(const std::string &src, ssize_t &i, char quote, std::string &str){
+        quote = CUR;
+        int start_pos = i;
+        ++i;
+        int str_len = src.size();
+        int back_slash = 0;
+        while(i < str_len){
+            if(CUR == '\\') {
+                back_slash++;
+                str.push_back(CUR);
+                continue;
+            }
+            if(CUR == quote && back_slash%2 == 0)
+                break;
+            if(quote == '\''){
+                if(CUR != quote){
+                    return false;
+                }
+                break;
+            }
+            str.push_back(CUR);
+            back_slash = 0;
+            i++;
         }
+        if(CUR != quote){
+            i = start_pos;
+            return false;
+        }
+        ++i;
+        return true;
+    };
+
+    //ref from scribe lang created by "chirag khandelwal"
+    bool get_num(const std::string &src, ssize_t &i, int base, std::string &num, Token_type &type){
+        int str_len = src.size();
+        bool hex = false;
+        int frist_digit = i;
+        int dot_pos = -1;
+        while(i < str_len){
+            const char cur = CUR;
+            const char nxt = NXT;
+            if(i == frist_digit && cur == '0' && (nxt == 'x'||nxt == 'X')){
+                hex = true;
+                base = 16;
+                i+=2;
+                continue;
+            }
+            switch(cur){
+                case '0':
+                {
+                    break;
+                }
+                // case 'x':
+                // case 'X':
+                // {
+                //     if(PRV == '0'){
+                //        base = 16;
+                //        hex = true;
+                //        break;
+                //     }
+                //     goto fail;
+                // }
+                case 'A':
+                case 'a':
+                case 'B':
+                case 'b':
+                case 'C':
+                case 'c':
+                case 'D':
+                case 'd':
+                case 'E':
+                case 'e':
+                case 'F':
+                case 'f':
+                {
+                    if(hex)break;
+                    goto fail;
+                }
+                case '1':
+                    break;
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                {
+                    if(hex||base > 2)break;
+                    goto fail;                 
+                }
+                case '7':
+                case '8':
+                case '9':
+                {
+                    if(hex||base >= 8)break;
+                    goto fail;
+                }
+                case '.':
+                {
+                    if(base != 10 || hex){
+                        printf("encountered dot character but base is not 10\n");
+                        return false;
+                    } else if(dot_pos == -1) {
+                        if(1){
+                          dot_pos = i;
+                          type = FLOAT;
+                        }else{
+                            goto fail;
+                        }
+                    }else{
+                        printf("encountered double dot in single number\n");
+                        return false;
+                    }
+                } 
+                default:
+                {
+                    fail:
+                    
+                }
+            }
+        }
+        return true;
     }
-
-
 
 }
