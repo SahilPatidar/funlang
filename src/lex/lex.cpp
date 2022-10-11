@@ -11,7 +11,9 @@ namespace lex
         "FLOAT",
         "IDEN",
 
-        "const"
+        "import",
+        "type",
+        "const",
         "fn",
         "for",
         "var",
@@ -46,6 +48,7 @@ namespace lex
         "/",
         "%",
         "+=",
+        "*=",
         "-=",
         "/=",
         "%=",
@@ -80,16 +83,15 @@ namespace lex
         "<<=",
         ">>=",
 
-        "()",
-        "[]",
-        "{}",
+        // "()",
+        // "[]",
+        // "{}",
 
-        "...",
-
+        "->",
         ".",
         ";",
         ":",
-        ","
+        ",",
         "SPC",
         "TAB",
         "NEWL",
@@ -109,14 +111,16 @@ namespace lex
     #define PRV (str_len > 0&&i > 0?src[i-1]:0)
     int get_keyword(std::string &src);
     std::string get_string(std::string &src, int &i);
+
     bool tokenizer(const std::string &src, tok_t& toks,int begin, int end){
         ssize_t i = begin;
         bool comment_line = false;
         bool comment_block = false;
 
         size_t str_len = src.size();
-
+        int start_pos = 0;
         while(i < end){
+            start_pos = i;
             if(comment_line){
                 if(CUR == '\n')comment_line=false;
                 ++i;
@@ -164,6 +168,8 @@ namespace lex
                     printf("error: number\n");
                     return false;
                 }
+                toks.emplace_back(i - str.size(),str,type);
+                continue;
 
             }
 
@@ -176,35 +182,20 @@ namespace lex
                 toks.emplace_back(i - str.length(),str, quote=='\"'?STR:CHAR);
                 continue;
             }
-
+            Token_type type = INVALID;
+            if(get_operator(src, type, i)){
+                std::string opr;
+                toks.emplace_back(i - start_pos, opr, type);
+                continue;
+            }
         }
 
         return true;
     }
-    // bool tokenize(const std::string &src, ssize_t begin, ssize_t end, tok_t&toks){
-    //     ssize_t i = begin;
-    //     bool comment_block = false;
-    //     while(i < end){
-    //         switch(CUR){
-    //             case '/':
-    //             {
-    //                 if(NXT == '*'){
-    //                     comment_block = true;
-    //                     i+=2;
-    //                     break;
-    //                 }
-    //             }
-    //             case '*':
-    //             {
-
-    //             }
-    //         }
-    //     }
-
-    //     return true;
-    // }
+    
     int get_keyword(std::string &src) {
         if(src == token[FOR])return FOR;
+        if(src == token[TYPE])return TYPE;
         if(src == token[IF])return IF;
         if(src == token[ELIF])return ELIF;
         if(src == token[ELSE])return ELSE;
@@ -213,10 +204,14 @@ namespace lex
         if(src == token[STRUCT])return STRUCT;
         if(src == token[NIL])return NIL;
         if(src == token[CONTINUE])return CONTINUE;
+        if(src == token[BREAK])return BREAK;
         if(src == token[TRUE])return TRUE;
         if(src == token[FALSE])return FALSE;
         if(src == token[CONST])return CONST;
         if(src == token[VAR])return VAR;
+        if(src == token[ENUM])return ENUM;
+        if(src == token[STRUCT])return STRUCT;
+        if(src == token[IMPORT])return IMPORT;
         if(src == token[STRING])return STRING;
         if(src == token[I8])return I8;
         if(src == token[I16])return I16;
@@ -263,7 +258,6 @@ namespace lex
         return true;
     };
 
-    //ref from scribe lang created by "chirag khandelwal"
     bool get_num(const std::string &src, ssize_t &i, int base, std::string &num, Token_type &type){
         int str_len = src.size();
         bool hex = false;
@@ -283,16 +277,6 @@ namespace lex
                 {
                     break;
                 }
-                // case 'x':
-                // case 'X':
-                // {
-                //     if(PRV == '0'){
-                //        base = 16;
-                //        hex = true;
-                //        break;
-                //     }
-                //     goto fail;
-                // }
                 case 'A':
                 case 'a':
                 case 'B':
@@ -333,7 +317,7 @@ namespace lex
                         printf("encountered dot character but base is not 10\n");
                         return false;
                     } else if(dot_pos == -1) {
-                        if(1){
+                        if(nxt >= '0' && nxt <='9'){
                           dot_pos = i;
                           type = FLOAT;
                         }else{
@@ -347,10 +331,208 @@ namespace lex
                 default:
                 {
                     fail:
-                    
+                        if(isalnum(cur)){
+                            printf("invalid number\n");
+                            return false;
+                        }else{
+
+                        }
                 }
             }
+
+            num.push_back(cur);
+            ++i;
         }
+        return true;
+    }
+
+
+    bool get_string( ) {
+
+    }
+
+    #define SET(type) \
+      op_type = type;       \
+      ++i;                  \
+      break                                 
+
+    bool get_operator(const std::string &src, Token_type &op_type, ssize_t &i) {
+        int str_len = src.size();
+        int first_op = i;
+        switch(CUR){
+            case '+':
+            {
+                if(i < str_len - 1){
+                    if(NXT == '+'){
+                       SET(V_INC);
+                    }else if(NXT == '='){
+                        SET(AND_ASSN);
+                    }
+                }
+               SET(ADD);
+            }
+            case '-':
+             {
+                if(i < str_len - 1){
+                    if(NXT == '-'){
+                       SET(V_DEC);
+                    }else if(NXT == '='){
+                       SET(ASSN_SUB);
+                    }else if(NXT == '>'){
+                        SET(ARROW);
+                    }
+                }
+                SET(SUB);
+            }
+            case '%':
+            {
+                if(i < str_len - 1){
+                    if(NXT == '='){
+                        SET(ASSN_MOD); 
+                    }
+                }
+                SET(MOD);
+            }
+            case '*':
+            {
+                if(i < str_len - 1){
+                    if(NXT == '='){
+                        SET(ASSN_MUL);
+                    }
+                }
+                SET(MUL);
+            }
+            case '=':
+            {
+                if(i < str_len - 1){
+                    if(NXT == '='){
+                        SET(EQL);
+                    }
+                }
+                SET(ASSN);
+            }
+            case '/':
+            {
+                if(i < str_len - 1){
+                    if(NXT == '='){
+                        SET(ASSN_DIV);
+                    }
+                }
+                SET(DIV);
+            }
+            case '&':
+            {
+                if(i < str_len - 1){
+                    if(NXT == '='){
+                        SET(AND_ASSN);
+                    }else if(NXT == '&'){
+                        SET(AND);
+                    }
+                }
+                SET(AND_OP);
+            }
+            case '|':
+             {
+                if(i < str_len - 1){
+                    if(NXT == '='){
+                        SET(OR_ASSN);
+                    }else if(NXT == '|'){
+                        SET(OR);
+                    }
+                }
+                SET(OR_OP);
+            }
+            case '!':
+             {
+                if(i < str_len - 1){
+                    if(NXT == '='){
+                        SET(NEQL);
+                    }
+                }
+                SET(NOT);
+            }
+            case '~':
+            {
+                if(i < str_len - 1){
+                    if(NXT == '='){
+                        SET(COMP_ASSN);
+                    }
+                }
+                SET(COMP_OP);
+            }
+            case '<':
+            {
+                if(i < str_len - 1){
+                    if(NXT == '='){
+                        SET(LEQL);
+                    }else if(NXT == '<'){
+                        ++i;
+                        if(i < str_len - 1){
+                            if(NXT == '='){
+                                SET(LSHIFT_ASSN);
+                            }
+                        }
+                        SET(LSHIFT);
+                    }
+                }
+                SET(LT);
+            }
+            case '>':
+            {
+                if(i < str_len - 1){
+                    if(NXT == '='){
+                        SET(GEQL);
+                    }else if(NXT == '<'){
+                        ++i;
+                        if(i < str_len - 1){
+                            if(NXT == '='){
+                                SET(RSHIFT_ASSN);
+                            }
+                        }
+                        SET(RSHIFT);
+                    }
+                }
+                SET(GT);
+            }
+            case '^':
+            {
+                if(i < str_len - 1){
+                    if(NXT == '='){
+                        SET(XOR_ASSN);
+                    }
+                }
+                SET(XOR_OP);
+            }
+            case ':':
+                SET(COL);
+            case ',':
+                SET(COMMA);
+            case ';':
+                SET(SCOL);
+            case '/t':
+            case ' ':
+
+            case '.':
+                SET(DOT);
+            case '[':
+                SET(LBRACK);
+            case ']':
+                SET(RBRACK);
+            case '(':
+                SET(LBRACE);
+            case ')':
+                SET(RBRACE);
+            case '{':
+                SET(LPAREN);
+            case '}':
+                SET(LPAREN);
+
+
+            default:
+                return false;
+
+        }
+        
         return true;
     }
 
