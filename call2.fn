@@ -2,7 +2,7 @@ import(std)
 var car =  enum:i16{
 
 };
-var c = struct{
+var c = struct {
 
 };
 fn main():i32 {

@@ -1,10 +1,10 @@
 #include <iostream>
 #include <string>
 #include "../../include/lex/lex.hpp"
-#include "../../include/Error.hpp"
+//#include "../../include/Error.hpp"
 namespace lex
 {
-    extern const char *token[_LAST] = {
+    const char *token[_LAST] = {
         "INT",
         "STR",
         "CHAR",
@@ -12,7 +12,6 @@ namespace lex
         "IDEN",
 
         "import",
-        "type",
         "const",
         "fn",
         "for",
@@ -31,7 +30,7 @@ namespace lex
         "enum",
         "string",
         "i8",
-        "i16"
+        "i16",
         "i32",
         "i64",
         "ui8",
@@ -83,10 +82,6 @@ namespace lex
         "<<=",
         ">>=",
 
-        // "()",
-        // "[]",
-        // "{}",
-
         "->",
         ".",
         ";",
@@ -97,27 +92,31 @@ namespace lex
         "NEWL",
 
         "(",
-        ")"
+        ")",
         "{",
         "}",
         "[",
         "]",
 
         "<FEOF>",
-        "<INVALID>"};
+        "<INVALID>"
+        };
 
     #define CUR (src[i])
     #define NXT (i < str_len?src[i+1]:0)
     #define PRV (str_len > 0&&i > 0?src[i-1]:0)
-    int get_keyword(std::string &src);
-    std::string get_string(std::string &src, int &i);
+    Token_type get_keyword(std::string &src);
+     bool get_operator(const std::string &src, Token_type &op_type, int &i);
+    std::string get_string(const std::string &src, int &i);
+    bool get_const_string(const std::string &src, int &i, char &quote, std::string &str);
+    bool get_num(const std::string &src, int &i, int base, std::string &num, Token_type &type);
+    
 
-    bool tokenizer(const std::string &src, tok_t& toks,int begin, int end){
-        ssize_t i = begin;
+    bool tokenizer(const std::string &src, tok_t &toks,int begin, int end){
+        int i = begin;
         bool comment_line = false;
         bool comment_block = false;
-
-        size_t str_len = src.size();
+        int str_len = src.size();
         int start_pos = 0;
         while(i < end){
             start_pos = i;
@@ -135,7 +134,7 @@ namespace lex
             }
             if(CUR == '*' && NXT == '/'){
                 if(!comment_block){
-                    fprintf(stderr, "wrong comment symbol :: %d", i);
+                    printf("wrong comment symbol :: %d", i);
                 }
                 comment_block = false;
                 i+=2;
@@ -155,20 +154,25 @@ namespace lex
                 i++;
             }
 
-            //string
-            if(isalpha(src[i])&&!isalnum(PRV)) {
-
+            if(isalpha(src[i])&&!isalnum(PRV)&&PRV != '\''&&PRV != '\"'&&PRV!=']'&&PRV!=')') {
+                std::string str = get_string(src, i);
+                if(str == ""){
+                    return false;
+                }
+                Token_type tok_name = get_keyword(str);
+                toks.push_back(tok(start_pos, str, tok_name));
+                continue;
             }
 
             if(isdigit(src[i])){
                 int base = 10;
-                Token_type type;
+                Token_type type = INT;
                 std::string str;
                 if(!get_num(src, i, base, str, type)){
                     printf("error: number\n");
                     return false;
                 }
-                toks.emplace_back(i - str.size(),str,type);
+                toks.push_back(tok(start_pos, str ,type));
                 continue;
 
             }
@@ -178,24 +182,22 @@ namespace lex
                 char quote = '\"';
                 if(!get_const_string(src, i, quote, str)){
                     printf("error in const string %d\n",i);
+                    return false;
                 }
-                toks.emplace_back(i - str.length(),str, quote=='\"'?STR:CHAR);
+                toks.push_back(tok(start_pos, str, quote=='\"'?STR:CHAR));
                 continue;
             }
             Token_type type = INVALID;
             if(get_operator(src, type, i)){
-                std::string opr;
-                toks.emplace_back(i - start_pos, opr, type);
+                toks.push_back(tok(start_pos, token[type], type));
                 continue;
             }
         }
-
         return true;
     }
     
-    int get_keyword(std::string &src) {
+    Token_type get_keyword(std::string &src) {
         if(src == token[FOR])return FOR;
-        if(src == token[TYPE])return TYPE;
         if(src == token[IF])return IF;
         if(src == token[ELIF])return ELIF;
         if(src == token[ELSE])return ELSE;
@@ -206,6 +208,7 @@ namespace lex
         if(src == token[CONTINUE])return CONTINUE;
         if(src == token[BREAK])return BREAK;
         if(src == token[TRUE])return TRUE;
+        if(src == token[RETURN])return RETURN;
         if(src == token[FALSE])return FALSE;
         if(src == token[CONST])return CONST;
         if(src == token[VAR])return VAR;
@@ -226,7 +229,21 @@ namespace lex
         return IDEN;
     }
 
-    bool get_const_string(const std::string &src, ssize_t &i, char quote, std::string &str){
+    std::string  get_string(const std::string &src, int &i){
+        int str_len = src.size();
+        std::string str;
+        while (i < str_len)
+        {   
+            if(!isalnum(src[i]) && CUR != '_'){
+               break;
+            }
+            str.push_back(src[i]);
+            ++i;
+        }
+        return str;
+    }
+
+    bool get_const_string(const std::string &src, int &i, char &quote, std::string &str){
         quote = CUR;
         int start_pos = i;
         ++i;
@@ -234,31 +251,34 @@ namespace lex
         int back_slash = 0;
         while(i < str_len){
             if(CUR == '\\') {
-                back_slash++;
+                ++back_slash;
                 str.push_back(CUR);
+                ++i;
                 continue;
             }
             if(CUR == quote && back_slash%2 == 0)
                 break;
+            
+            str.push_back(CUR);
+             ++i;
             if(quote == '\''){
                 if(CUR != quote){
+                    printf("error: quote not matching\n");
                     return false;
                 }
                 break;
             }
-            str.push_back(CUR);
             back_slash = 0;
-            i++;
         }
-        if(CUR != quote){
-            i = start_pos;
-            return false;
-        }
+        // if(CUR != quote){
+        //     i = start_pos;
+        //     return false;
+        // }
         ++i;
         return true;
     };
 
-    bool get_num(const std::string &src, ssize_t &i, int base, std::string &num, Token_type &type){
+    bool get_num(const std::string &src, int &i, int base, std::string &num, Token_type &type){
         int str_len = src.size();
         bool hex = false;
         int frist_digit = i;
@@ -269,6 +289,8 @@ namespace lex
             if(i == frist_digit && cur == '0' && (nxt == 'x'||nxt == 'X')){
                 hex = true;
                 base = 16;
+                num.push_back(cur);
+                num.push_back(nxt);
                 i+=2;
                 continue;
             }
@@ -314,7 +336,7 @@ namespace lex
                 case '.':
                 {
                     if(base != 10 || hex){
-                        printf("encountered dot character but base is not 10\n");
+                        fprintf(stderr,"encountered dot character but base is not 10\n");
                         return false;
                     } else if(dot_pos == -1) {
                         if(nxt >= '0' && nxt <='9'){
@@ -327,15 +349,16 @@ namespace lex
                         printf("encountered double dot in single number\n");
                         return false;
                     }
+                    break;
                 } 
                 default:
                 {
                     fail:
                         if(isalnum(cur)){
-                            printf("invalid number\n");
+                            printf("invalid number %c  %c\n",cur,nxt);
                             return false;
                         }else{
-
+                            return true;
                         }
                 }
             }
@@ -346,17 +369,11 @@ namespace lex
         return true;
     }
 
-
-    bool get_string( ) {
-
-    }
-
     #define SET(type) \
-      op_type = type;       \
-      ++i;                  \
+      op_type = type; \
       break                                 
 
-    bool get_operator(const std::string &src, Token_type &op_type, ssize_t &i) {
+    bool get_operator(const std::string &src, Token_type &op_type, int &i) {
         int str_len = src.size();
         int first_op = i;
         switch(CUR){
@@ -364,8 +381,10 @@ namespace lex
             {
                 if(i < str_len - 1){
                     if(NXT == '+'){
+                        ++i;
                        SET(V_INC);
                     }else if(NXT == '='){
+                        ++i;
                         SET(AND_ASSN);
                     }
                 }
@@ -375,10 +394,13 @@ namespace lex
              {
                 if(i < str_len - 1){
                     if(NXT == '-'){
+                        ++i;
                        SET(V_DEC);
                     }else if(NXT == '='){
+                        ++i;
                        SET(ASSN_SUB);
                     }else if(NXT == '>'){
+                        ++i;
                         SET(ARROW);
                     }
                 }
@@ -388,6 +410,7 @@ namespace lex
             {
                 if(i < str_len - 1){
                     if(NXT == '='){
+                        ++i;
                         SET(ASSN_MOD); 
                     }
                 }
@@ -397,6 +420,7 @@ namespace lex
             {
                 if(i < str_len - 1){
                     if(NXT == '='){
+                        ++i;
                         SET(ASSN_MUL);
                     }
                 }
@@ -406,6 +430,7 @@ namespace lex
             {
                 if(i < str_len - 1){
                     if(NXT == '='){
+                        ++i;
                         SET(EQL);
                     }
                 }
@@ -415,6 +440,7 @@ namespace lex
             {
                 if(i < str_len - 1){
                     if(NXT == '='){
+                        ++i;
                         SET(ASSN_DIV);
                     }
                 }
@@ -424,8 +450,10 @@ namespace lex
             {
                 if(i < str_len - 1){
                     if(NXT == '='){
+                        ++i;
                         SET(AND_ASSN);
                     }else if(NXT == '&'){
+                        ++i;
                         SET(AND);
                     }
                 }
@@ -435,8 +463,10 @@ namespace lex
              {
                 if(i < str_len - 1){
                     if(NXT == '='){
+                        ++i;
                         SET(OR_ASSN);
                     }else if(NXT == '|'){
+                        ++i;
                         SET(OR);
                     }
                 }
@@ -446,6 +476,7 @@ namespace lex
              {
                 if(i < str_len - 1){
                     if(NXT == '='){
+                        ++i;
                         SET(NEQL);
                     }
                 }
@@ -455,6 +486,7 @@ namespace lex
             {
                 if(i < str_len - 1){
                     if(NXT == '='){
+                        ++i;
                         SET(COMP_ASSN);
                     }
                 }
@@ -464,10 +496,12 @@ namespace lex
             {
                 if(i < str_len - 1){
                     if(NXT == '='){
+                        ++i;
                         SET(LEQL);
                     }else if(NXT == '<'){
-                        ++i;
+                        
                         if(i < str_len - 1){
+                            ++i;
                             if(NXT == '='){
                                 SET(LSHIFT_ASSN);
                             }
@@ -481,6 +515,7 @@ namespace lex
             {
                 if(i < str_len - 1){
                     if(NXT == '='){
+                        ++i;
                         SET(GEQL);
                     }else if(NXT == '<'){
                         ++i;
@@ -498,6 +533,7 @@ namespace lex
             {
                 if(i < str_len - 1){
                     if(NXT == '='){
+                        ++i;
                         SET(XOR_ASSN);
                     }
                 }
@@ -509,9 +545,12 @@ namespace lex
                 SET(COMMA);
             case ';':
                 SET(SCOL);
-            case '/t':
+            case '\t':
+                SET(TAB);
+            case '\n':
+                SET(NEWL);
             case ' ':
-
+                SET(SPC);
             case '.':
                 SET(DOT);
             case '[':
@@ -525,14 +564,14 @@ namespace lex
             case '{':
                 SET(LPAREN);
             case '}':
-                SET(LPAREN);
+                SET(RPAREN);
 
 
             default:
                 return false;
 
         }
-        
+        ++i;
         return true;
     }
 

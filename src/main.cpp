@@ -7,20 +7,31 @@
 #include"../include/lex/lex.hpp"
 
 void compile(){
-   std::ifstream file("../call.fn");
+   std::ifstream file("call.fn");
    std::stringstream buf;
    buf << file.rdbuf();
    std::cout<<buf.str();
    std::string src = buf.str();
    lex::tok_t toks;
+   int ipos=0;
+   int str_len = src.size();
+   bool c = lex::tokenizer(src, toks, ipos, str_len);
+   if(!c){
+    printf("invalid src string..\n");
+   }
+    std::cout<<str_len<<std::endl;
+    for(int i = 0; i < str_len; i++){
+        std::cout<<toks[i].data<<"    "<<toks[i].pos<<"    "<<toks[i].tok_type<<std::endl;
+    }
 
 }
 
 int main(int argc, char *argv[]){
-    if(argc < 0){
-        printf("too few args");
-        return EXIT_FAILURE;
-    }else{
+    // if(argc < 0){
+    //     printf("too few args");
+    //     return EXIT_FAILURE;
+    // }else{
         compile();
-    }
+
+   // }
 }

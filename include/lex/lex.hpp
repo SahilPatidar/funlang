@@ -1,7 +1,7 @@
 #ifndef LEX_HPP
 #define LEX_HPP
 
-#include <cstdio>
+//#include <cstdio>
 #include <iostream>
 #include <vector>
 
@@ -16,7 +16,6 @@ namespace lex
         IDEN,
 
         IMPORT,
-        TYPE,
         CONST,
         FN,
         FOR,
@@ -44,8 +43,6 @@ namespace lex
         UI64,
         F32,
         F64,
-
-
 
         ASSN,
         ADD,
@@ -112,18 +109,20 @@ namespace lex
         FEOF,
         INVALID,
         _LAST
-
     };
-
+    extern const char *token[_LAST];
     struct tok
     {
         int pos;
         std::string data;
-        Token_type tok;
+        Token_type tok_type;
+        tok(const int &_pos, const std::string &_data, const int &_type)
+		: pos(_pos),  data(_data), tok_type((Token_type)_type)
+	    {}
     };
     typedef std::vector<tok> tok_t;
 
-    tok_t tokenizer(std::string &src, tok_t&tokes);
+    bool tokenizer(const std::string &src, tok_t &tokes, int begin, int end);
 
 }
 

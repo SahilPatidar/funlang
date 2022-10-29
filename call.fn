@@ -2,7 +2,11 @@ io = import(std)
 
 fn main():i32 {
     var call = "hello world";
+    var c = 'c';
+    var c:f32 = 123.343;
     var c:string;
+    var c:i64 = 3434343;
+    var c = 0xae232;
     io.print(call);
     return 0;
 }
