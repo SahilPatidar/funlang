@@ -12,6 +12,7 @@ namespace lex
         "IDEN",
 
         "import",
+        "type",
         "const",
         "fn",
         "for",
@@ -29,6 +30,10 @@ namespace lex
         "struct",
         "enum",
         "string",
+        "void",
+        "static",
+        "extern",
+        "inline",
         "i8",
         "i16",
         "i32",
@@ -116,18 +121,23 @@ namespace lex
         int i = begin;
         bool comment_line = false;
         bool comment_block = false;
+        int line = 0;
         int str_len = src.size();
         int start_pos = 0;
+        int line_start = 0;
         while(i < end){
             start_pos = i;
+            if(CUR=='\n'){
+                ++line;
+                line_start = i+1;
+            }
+
             if(comment_line){
                 if(CUR == '\n')comment_line=false;
                 ++i;
                 continue;
             }
-            if(CUR=='\n'){
-
-            }
+            
             if(isspace(src[i])){
                 i++;
                 continue;
@@ -160,7 +170,7 @@ namespace lex
                     return false;
                 }
                 Token_type tok_name = get_keyword(str);
-                toks.push_back(tok(start_pos, str, tok_name));
+                toks.push_back(tok(line, i - line_start - start_pos, str, tok_name));
                 continue;
             }
 
@@ -172,7 +182,7 @@ namespace lex
                     printf("error: number\n");
                     return false;
                 }
-                toks.push_back(tok(start_pos, str ,type));
+                toks.push_back(tok(line, i - line_start - start_pos, str ,type));
                 continue;
 
             }
@@ -184,12 +194,12 @@ namespace lex
                     printf("error in const string %d\n",i);
                     return false;
                 }
-                toks.push_back(tok(start_pos, str, quote=='\"'?STR:CHAR));
+                toks.push_back(tok(line, i - line_start - start_pos, str, quote=='\"'?STR:CHAR));
                 continue;
             }
             Token_type type = INVALID;
             if(get_operator(src, type, i)){
-                toks.push_back(tok(start_pos, token[type], type));
+                toks.push_back(tok(line, i - line_start - start_pos, token[type], type));
                 continue;
             }
         }
@@ -208,6 +218,11 @@ namespace lex
         if(src == token[CONTINUE])return CONTINUE;
         if(src == token[BREAK])return BREAK;
         if(src == token[TRUE])return TRUE;
+        if(src == token[VOID])return VOID;
+        if(src == token[TYPE])return TYPE;
+        if(src == token[STATIC])return STATIC;
+        if(src == token[EXTERN])return EXTERN;
+        if(src == token[INLINE])return INLINE;
         if(src == token[RETURN])return RETURN;
         if(src == token[FALSE])return FALSE;
         if(src == token[CONST])return CONST;
