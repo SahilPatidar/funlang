@@ -16,6 +16,7 @@ namespace lex
         IDEN,
 
         IMPORT,
+        TYPE,
         CONST,
         FN,
         FOR,
@@ -33,6 +34,10 @@ namespace lex
         STRUCT,
         ENUM,
         STRING,
+        VOID,
+        STATIC,
+        EXTERN,
+        INLINE,
         I8,
         I16,
         I32,
@@ -86,10 +91,6 @@ namespace lex
         LSHIFT_ASSN,
         RSHIFT_ASSN,
 
-        // SUBS,
-        // DICT,
-        // ARRAY,
-
         ARROW,
         DOT,
         SCOL,
@@ -113,11 +114,12 @@ namespace lex
     extern const char *token[_LAST];
     struct tok
     {
+        int line;
         int pos;
         std::string data;
         Token_type tok_type;
-        tok(const int &_pos, const std::string &_data, const int &_type)
-		: pos(_pos),  data(_data), tok_type((Token_type)_type)
+        tok(const int &_line, const int &_pos, const std::string &_data, const int &_type)
+		:line(_line), pos(_pos),  data(_data), tok_type((Token_type)_type)
 	    {}
     };
     typedef std::vector<tok> tok_t;
