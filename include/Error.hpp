@@ -1,6 +1,6 @@
 #ifndef ERROR_H
 #define ERROR_H
-#include<string>
+//#include<string>
 
 enum Errors {
     ERR_OK,

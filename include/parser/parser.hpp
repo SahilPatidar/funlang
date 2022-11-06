@@ -15,6 +15,12 @@ namespace parser{
         void advance();
         AstPtr parseBlockStatement();
         AstPtr parseIdentifier();
+        AstPtr parseType();
+        AstPtr parseInt();
+        AstPtr parseString();
+        AstPtr parseFloat();
+        AstPtr parseOp();
+        AstPtr parseArray();
         AstPtr parseFor();
         AstPtr parseWhile();
         AstPtr parseEnum();
