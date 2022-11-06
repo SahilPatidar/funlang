@@ -1,12 +1,13 @@
 import(std)
-var car =  enum:i16{
+type car enum{
 
 };
-var c = struct {
+type c struct {
 
 };
 fn main():i32 {
-   var i = 0;
+   var i[] i32;
+   var c = car{};
    var s = "hello";
    return 0;
-}
+};
