@@ -31,9 +31,6 @@ namespace lex
         "enum",
         "string",
         "void",
-        "static",
-        "extern",
-        "inline",
         "i8",
         "i16",
         "i32",
@@ -220,9 +217,6 @@ namespace lex
         if(src == token[TRUE])return TRUE;
         if(src == token[VOID])return VOID;
         if(src == token[TYPE])return TYPE;
-        if(src == token[STATIC])return STATIC;
-        if(src == token[EXTERN])return EXTERN;
-        if(src == token[INLINE])return INLINE;
         if(src == token[RETURN])return RETURN;
         if(src == token[FALSE])return FALSE;
         if(src == token[CONST])return CONST;
