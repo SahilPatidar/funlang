@@ -5,13 +5,14 @@
 
 using namespace ast;
 namespace parser{
+    using namespace lex;
     class Parser {   
-        lex::Token_type cur_token;
-        lex::tok_t toks;
+        Token_type cur_token;
+        tok_t toks;
         int cur_index = 0;
         std::string path;
         std::string file_name;
-        void next();
+        Token_type next();
         void advance();
         AstPtr parseBlockStatement();
         AstPtr parseIdentifier();
@@ -19,6 +20,7 @@ namespace parser{
         AstPtr parseInt();
         AstPtr parseString();
         AstPtr parseFloat();
+        AstPtr parseBool();
         AstPtr parseOp();
         AstPtr parseArray();
         AstPtr parseFor();
@@ -27,8 +29,10 @@ namespace parser{
         AstPtr parseStruct();
         AstPtr parseTypeCast();
         AstPtr parseExpression();
-        AstPtr IfStatement();
-        AstPtr parseProgram();
+        AstPtr parseIf();
+        AstPtr parseStatement();
+        AstPtr parseVar();
+        AstPtr parseReturn();
         public:
         Parser(lex::tok_t& _toks, std::string _path, std::string _file_name)
         :toks(_toks), path(_path), file_name(_file_name) {}
