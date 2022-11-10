@@ -3,7 +3,7 @@
 
 namespace ast {
 
-    tok_t Program::token() const {
+    Token Program::token() const {
         return tok;
     }
 
@@ -12,7 +12,7 @@ namespace ast {
     }
 
 
-    tok_t BlockStatement::token() const {
+    Token BlockStatement::token() const {
         return tok;
     }
 
@@ -20,7 +20,7 @@ namespace ast {
         return statement;
     }
 
-    tok_t IntergerLitral::token() const {
+    Token IntergerLitral::token() const {
         return tok;
     }
     
@@ -28,7 +28,7 @@ namespace ast {
         return Int;
     }
 
-    tok_t StringLitral::token() const {
+    Token StringLitral::token() const {
         return tok;
     }
 
@@ -40,7 +40,7 @@ namespace ast {
         return chr;
     }
 
-    tok_t BoolLitral::token() const {
+    Token BoolLitral::token() const {
         return tok;
     }
     
@@ -48,7 +48,7 @@ namespace ast {
         return val;
     }
 
-    tok_t FloatLitral::token() const {
+    Token FloatLitral::token() const {
         return tok;
     }
 
@@ -56,7 +56,7 @@ namespace ast {
         return flt;
     }
 
-    tok_t Identifier::token() const {
+    Token Identifier::token() const {
         return tok;
     }
 
@@ -64,7 +64,7 @@ namespace ast {
         return id;
     }
 
-    tok_t BlockStatement::token() const {
+    Token BlockStatement::token() const {
         return tok;
     }
 
@@ -72,11 +72,11 @@ namespace ast {
         return statement;
     }
 
-    tok_t EnumLitral::token() const {
+    Token EnumLitral::token() const {
         return tok;
     }
 
-    tok_t BineryOp::token() const {
+    Token BineryOp::token() const {
         return tok;
     }
 
@@ -84,7 +84,7 @@ namespace ast {
         return left;
     }
 
-    tok_t BineryOp::oprator() const {
+    Token BineryOp::oprator() const {
         return op;
     }
 
@@ -92,7 +92,7 @@ namespace ast {
         return right;
     }
 
-    tok_t ForLoopState::token() const {
+    Token ForLoopState::token() const {
         return tok;
     }
 
@@ -112,7 +112,7 @@ namespace ast {
         return loopbody;
     }
     
-    tok_t WhileLoopState::token() const {
+    Token WhileLoopState::token() const {
         return tok;
     }
 
@@ -124,23 +124,23 @@ namespace ast {
         return loopbody;
     }
 
-    tok_t IntType::token() const {
+    Token IntType::token() const {
         return tok;
     }
 
-    tok_t StringType::token() const {
+    Token StringType::token() const {
         return tok;
     }
 
-    tok_t BoolType::token() const {
+    Token BoolType::token() const {
         return tok;
     }
 
-    tok_t FloatType::token() const {
+    Token FloatType::token() const {
         return tok;
     }
 
-    tok_t ConstExpr::token() const {
+    Token ConstExpr::token() const {
         return tok;
     }
 
