@@ -200,6 +200,7 @@ namespace lex
                 continue;
             }
         }
+        toks.push_back(tok(line, i - line_start - start_pos, token[FEOF], FEOF));
         return true;
     }
     
