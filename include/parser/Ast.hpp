@@ -269,6 +269,21 @@ namespace ast{
     //     public:
     // };
 
+    class UneryOp: public Ast {
+        private:
+        Token tok;
+        AstPtr var;
+        public:
+        UneryOp(Token &_tok, AstPtr &_var)
+        : tok(_tok), var(_var) {}
+
+        Token token() const;
+        AstPtr variable() const;
+        void accept() const;
+    };
+
+
+
     class ForLoopState: public Ast{
         private:
         std::vector<AstPtr> var;
@@ -407,15 +422,15 @@ namespace ast{
     class VariableState: public Ast {
         private:
         Token tok;
-        AstPtr name;
+        std::vector<AstPtr> name;
         AstPtr type;
         AstPtr val;
         public:
-        VariableState(Token &_tok, AstPtr &_var, AstPtr &_type, AstPtr &_val)
+        VariableState(Token &_tok, std::vector<AstPtr> &_var, AstPtr &_type, AstPtr &_val)
         : tok(_tok), name(_var), type(_type), val(_val) {}
 
         Token token() const;
-        AstPtr varname() const;
+        std::vector<AstPtr> varname() const;
         AstPtr vartype() const;
         AstPtr value() const;
         void accept() const;
