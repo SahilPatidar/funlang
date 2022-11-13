@@ -34,7 +34,7 @@ namespace lex
         STRUCT,
         ENUM,
         STRING,
-        VOID,
+        BOOL,
         I8,
         I16,
         I32,

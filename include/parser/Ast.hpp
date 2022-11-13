@@ -321,22 +321,37 @@ namespace ast{
         void accept() const;
     };
 
+    class ElifStatement: public Ast {
+        private:
+        Token tok;
+        AstPtr condition;
+        AstPtr body;
+        public:
+        ElifStatement(Token &_tok, AstPtr &_condition, AstPtr &_body)
+        : tok(_tok), condition(_condition), body(_body) {}
+
+        Token token() const;
+        AstPtr elifcondition() const;
+        AstPtr elifbody() const;
+        void accept() const;
+    };
+
     class IfStatement: public Ast{
         private:
         AstPtr condition;
         AstPtr ifbody;
         AstPtr elsebody;
-        AstPtr elifbody;
+        std::vector<AstPtr> elifbody;
         Token token;
         public:
         IfStatement(AstPtr &_condition , AstPtr &_ifbody, AstPtr &_elsebody,
-                     AstPtr &_elifbody, Token &_tok)
+                     std::vector<AstPtr> &_elifbody, Token &_tok)
         : condition(_condition), ifbody(_ifbody), elsebody(_elsebody), elifbody(_elifbody), token(_tok) {}
         
         AstPtr condition() const;
         AstPtr ifbody() const;
         AstPtr elsebody() const;
-        AstPtr elifbody() const;
+        std::vector<AstPtr> elifbody() const;
         Token token() const;
         void accept() const;
     };
@@ -440,8 +455,9 @@ namespace ast{
     struct param {
         AstPtr var;
         AstPtr type;
-        param(AstPtr &_var, AstPtr &_type)
-        : var(_var), type(_type)  {}
+        bool cons = false;
+        param(AstPtr &_var, AstPtr &_type, bool &_cons)
+        : var(_var), type(_type), cons(_cons) {}
     };
 
     class FunctionDef: public Ast {
@@ -460,6 +476,19 @@ namespace ast{
         std::vector<param> paramVal() const;
         AstPtr retType() const;
         AstPtr functionBody() const;
+        void accept() const;
+    };
+
+    class ReturnState: public Ast {
+        private:
+        Token tok;
+        AstPtr val;
+        public:
+        ReturnState(Token &_tok, AstPtr &_val)
+        : tok(_tok), val(_val) {}
+
+        Token token();
+        AstPtr value();
         void accept() const;
     };
 

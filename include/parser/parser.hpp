@@ -27,12 +27,15 @@ namespace parser{
         AstPtr parseWhile();
         AstPtr parseEnum();
         AstPtr parseStruct();
+        AstPtr parseReturn();
         AstPtr parseTypeCast();
         AstPtr parseExpression();
         AstPtr parseIf();
+        AstPtr parseElif();
+        AstPtr parseConst();
         AstPtr parseStatement();
         AstPtr parseVar();
-        AstPtr parseReturn();
+        AstPtr parseFuncdef();
         public:
         Parser(lex::tok_t& _toks, std::string _path, std::string _file_name)
         :toks(_toks), path(_path), file_name(_file_name) {}
