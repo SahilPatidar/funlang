@@ -96,6 +96,32 @@ namespace parser {
         return statm;
     }
 
+    AstPtr Parser::parseFuncCall() {
+        Token_type tok = cur_token;
+        AstPtr name;
+        std::vector<AstPtr> args;
+        advance();
+
+        name = parseIdentifier();
+
+        if(cur_token != LBRACE){
+            std::cerr<<"error:invalid expression "<<token[cur_token]<<std::endl;
+        }
+        advance();
+
+        while(cur_token){
+
+        }
+
+        if(cur_token != LBRACE){
+            std::cerr<<"error:invalid expression "<<token[cur_token]<<std::endl;
+        }
+        advance();
+        
+        return std::make_shared<FunctionCall>(tok, name, args);
+    }
+
+
     AstPtr Parser::parseFuncdef(){
         Token_type tok = cur_token;
         AstPtr name;
@@ -105,32 +131,32 @@ namespace parser {
 
         name = parseIdentifier();
         if(cur_token != LBRACE) {
-            std::cerr<<"invalid expression "<<token[cur_token]<<std::endl;
+            std::cerr<<"error:invalid expression "<<token[cur_token]<<std::endl;
         }
         advance();
 
 
 
         if(cur_token != RBRACE) {
-            std::cerr<<"invalid expression "<<token[cur_token]<<std::endl;
+            std::cerr<<"error:invalid expression "<<token[cur_token]<<std::endl;
         }
         advance();
 
         retype = parseType();
 
          if(cur_token != LPAREN) {
-            std::cerr<<"invalid expression "<<token[cur_token]<<std::endl;
+            std::cerr<<"error:invalid expression "<<token[cur_token]<<std::endl;
         }
         advance();
 
         body = parseBlockStatement();
 
         if(cur_token != RPAREN) {
-            std::cerr<<"invalid expression "<<token[cur_token]<<std::endl;
+            std::cerr<<"error:invalid expression "<<token[cur_token]<<std::endl;
         }
         advance();
 
-        return std::make_shared<FunctionDef>(tok, parameter, retype, body);
+        return std::make_shared<FunctionDef>(tok, name, parameter, retype, body);
     }
 
 

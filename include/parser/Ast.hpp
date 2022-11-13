@@ -463,16 +463,18 @@ namespace ast{
     class FunctionDef: public Ast {
         private:
         Token token;
+        AstPtr name;
         std::vector<param>parameter;
         AstPtr returntype;
         AstPtr funcbody;
         public:
-        FunctionDef(Token &_tok, std::vector<param>&_parameter,
+        FunctionDef(Token &_tok, AstPtr &_name, std::vector<param>&_parameter,
                                  AstPtr _retype, AstPtr &_uncbody)
-        : token(_tok), parameter(_parameter),
+         : token(_tok), name(_name), parameter(_parameter),
                          returntype(_retype), funcbody(funcbody) {}
 
         Token token() const;
+        AstPtr funcname() const;
         std::vector<param> paramVal() const;
         AstPtr retType() const;
         AstPtr functionBody() const;
@@ -494,14 +496,15 @@ namespace ast{
 
     class FunctionCall: public Ast {
         private:
-        Token token;
+        Token tok;
         AstPtr name;
         std::vector<AstPtr> args;
         public:
-        FunctionCall(Token &_tok, std::vector<AstPtr>&_args)
-        : token(_tok), args(_args) {}
+        FunctionCall(Token &_tok, AstPtr &_name, std::vector<AstPtr>&_args)
+        : tok(_tok), name(_name), args(_args) {}
 
-        Token tok() const;
+        Token token() const;
+        AstPtr funcname() const;
         std::vector<AstPtr> arg() const;
         void accept() const;
     };

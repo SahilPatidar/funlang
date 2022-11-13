@@ -36,6 +36,7 @@ namespace parser{
         AstPtr parseStatement();
         AstPtr parseVar();
         AstPtr parseFuncdef();
+        AstPtr parseFuncCall();
         public:
         Parser(lex::tok_t& _toks, std::string _path, std::string _file_name)
         :toks(_toks), path(_path), file_name(_file_name) {}
