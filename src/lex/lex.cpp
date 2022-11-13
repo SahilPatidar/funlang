@@ -30,7 +30,7 @@ namespace lex
         "struct",
         "enum",
         "string",
-        "void",
+        "bool",
         "i8",
         "i16",
         "i32",
@@ -216,7 +216,6 @@ namespace lex
         if(src == token[CONTINUE])return CONTINUE;
         if(src == token[BREAK])return BREAK;
         if(src == token[TRUE])return TRUE;
-        if(src == token[VOID])return VOID;
         if(src == token[TYPE])return TYPE;
         if(src == token[RETURN])return RETURN;
         if(src == token[FALSE])return FALSE;
@@ -226,6 +225,7 @@ namespace lex
         if(src == token[STRUCT])return STRUCT;
         if(src == token[IMPORT])return IMPORT;
         if(src == token[STRING])return STRING;
+        if(src == token[BOOL])return BOOL;
         if(src == token[I8])return I8;
         if(src == token[I16])return I16;
         if(src == token[I32])return I32;
