@@ -37,6 +37,7 @@ namespace parser{
         AstPtr parseVar();
         AstPtr parseFuncdef();
         AstPtr parseFuncCall();
+        std::vector<param> parseParamList();
         public:
         Parser(lex::tok_t& _toks, std::string _path, std::string _file_name)
         :toks(_toks), path(_path), file_name(_file_name) {}

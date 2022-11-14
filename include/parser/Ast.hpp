@@ -6,7 +6,7 @@
 #include<memory>
 #include"../lex/lex.hpp"
 
-using Token = lex::Token_type;
+using namespace lex;
 namespace ast{
     
     class Ast{
@@ -18,54 +18,54 @@ namespace ast{
 
     class Program: public Ast {
         private:
-        Token tok;
+        tokt tok;
         std::vector<AstPtr> statement;
         public:
-        Program(Token &_tok, std::vector<AstPtr>&_state) 
+        Program(tokt &_tok, std::vector<AstPtr>&_state) 
         :tok(_tok), statement(_state) {}
 
-        Token token() const;
+        tokt token() const;
         std::vector<AstPtr> statements() const;
         void accept() const;
     };
 
     class IntergerLitral: public Ast {
         private:
-        Token tok;
+        tokt tok;
         std::string Int;
         public:
-        IntergerLitral(std::string &_int, Token &_tok)
+        IntergerLitral(std::string &_int, tokt &_tok)
         : Int(_int), tok(_tok) {}
 
         std::string value() const;
-        Token token() const;
+        tokt token() const;
         void accept() const;
     };
 
     class BoolLitral: public Ast {
         private:
         std::string val;
-        Token tok;
+        tokt tok;
         public:
-        BoolLitral(std::string &_val, Token &_tok)
+        BoolLitral(std::string &_val, tokt &_tok)
         : val(_val), tok(_tok) {}
 
         std::string value() const;
-        Token token() const;
+        tokt token() const;
         void accept() const;
     };
 
     class StringLitral: public Ast {
         private:
         std::string str;
-        Token tok;
+        tokt tok;
         bool chr;
         public:
-        StringLitral(Token &_tok, std::string &_str, bool _chr)
+        StringLitral(tokt &_tok, std::string &_str, bool _chr)
         : tok(_tok), str(_str), chr(_chr) {}
 
         std::string value() const;
-        Token token() const;
+        tokt token() const;
         bool ischar() const;
         void accept() const;
     };
@@ -73,130 +73,130 @@ namespace ast{
     class NoLiteral: public AstPtr {
         public:
         NoLiteral() = default;
-        Token token() const;
+        tokt token() const;
         void accept() const;
     };
 
     class NullLitral: public AstPtr {
         private:
-        Token tok;
+        tokt tok;
         public:
-        NullLitral(Token &_tok)
+        NullLitral(tokt &_tok)
         : tok(_tok) {}
 
-        Token token() const;
+        tokt token() const;
         void accept() const;
     };
 
     class FloatLitral: public Ast {
         private:
         std::string flt;
-        Token tok;
+        tokt tok;
         public:
-        FloatLitral(std::string &_flt, Token &_tok)
+        FloatLitral(std::string &_flt, tokt &_tok)
             : flt(_flt), tok(_tok) {}
 
         std::string value() const;
-        Token token() const;
+        tokt token() const;
         void accept() const;
     };
 
     class Identifier: public Ast {
         private:
-        Token tok;
+        tokt tok;
         std::string id;
         public:
-        Identifier(std::string &id, Token &_tok)
+        Identifier(std::string &id, tokt &_tok)
             :id(id), tok(_tok) {}
 
         std::string value() const;
-        Token token() const;
+        tokt token() const;
         void accept() const;
     };
 
 
     class BlockStatement: public Ast {
         private:
-        Token tok;
+        tokt tok;
         std::vector<AstPtr> statement;
         public:
-        BlockStatement(Token &_tok, std::vector<AstPtr> &_state)
+        BlockStatement(tokt &_tok, std::vector<AstPtr> &_state)
             :tok(_tok), statement(_state) {}
 
         std::vector<AstPtr> statements() const;
-        Token token() const;
+        tokt token() const;
         void accept() const;
     };
     
     
     class EnumLitral: public Ast {
         private:
-        Token tok;
+        tokt tok;
         AstPtr var;
         std::vector<std::pair<AstPtr,AstPtr>>u_data;
         public:
         EnumLitral( AstPtr &_var,  std::vector<std::pair<AstPtr,
-                    AstPtr>>&_u_data, Token &_tok)
+                    AstPtr>>&_u_data, tokt &_tok)
             :var(_var), u_data(_u_data), tok(_tok) {}
 
         std::vector<std::pair<AstPtr,AstPtr>> value() const;
         AstPtr varname() const;
-        Token token() const;
+        tokt token() const;
         void accept() const;
     };
 
     class IntType: public Ast {
         private:
-        Token tok;
+        tokt tok;
         public:
-        IntType(Token &_tok)
+        IntType(tokt &_tok)
         : tok(_tok) {}
-        Token token() const;
+        tokt token() const;
         void accept() const;
     };
 
     class StringType: public Ast {
         private:
-        Token tok;
+        tokt tok;
         public:
-        StringType(Token &_tok)
+        StringType(tokt &_tok)
         : tok(_tok) {}
-        Token token() const;
+        tokt token() const;
         void accept() const;
     };
 
     
     class FloatType: public Ast {
         private:
-        Token tok;
+        tokt tok;
         public:
-        FloatType(Token &_tok)
+        FloatType(tokt &_tok)
         : tok(_tok) {}
-        Token token() const;
+        tokt token() const;
         void accept() const;
     };
 
     class BoolType: public Ast {
         private:
-        Token tok;
+        tokt tok;
         public:
-        BoolType(Token &_tok)
+        BoolType(tokt &_tok)
         : tok(_tok) {}
-        Token token() const;
+        tokt token() const;
         void accept() const;
     };
 
     class ConstExpr: public Ast {
         private:
-        Token tok;
+        tokt tok;
         AstPtr varname;
         AstPtr type;
         AstPtr val;
         public:
-        ConstExpr(Token &_tok, AstPtr &_var, AstPtr &_type, AstPtr &_val)
+        ConstExpr(tokt &_tok, AstPtr &_var, AstPtr &_type, AstPtr &_val)
         : tok(_tok), varname(_var), type(_type), val(_val) {}
 
-        Token token() const;
+        tokt token() const;
         AstPtr vname() const;
         AstPtr vartype() const;
         AstPtr value() const;
@@ -205,14 +205,14 @@ namespace ast{
 
     class ArrayTypeExpr: public Ast {
         private:
-        Token tok;
+        tokt tok;
         AstPtr size;
         AstPtr type;
         public:
-        ArrayTypeExpr(Token &_tok, AstPtr &_size, AstPtr &_type)
+        ArrayTypeExpr(tokt &_tok, AstPtr &_size, AstPtr &_type)
         : tok(_tok), size(_size), type(type) {}
 
-        Token token() const;
+        tokt token() const;
         AstPtr arraysize() const;
         AstPtr arraytype() const;
         void accept() const;
@@ -220,27 +220,27 @@ namespace ast{
 
     class ArrayLitral: public Ast {
         private:
-        Token tok;
+        tokt tok;
         std::vector<AstPtr> val;
         public:
-        ArrayLitral(Token &_tok, std::vector<AstPtr>&_val)
+        ArrayLitral(tokt &_tok, std::vector<AstPtr>&_val)
         : tok(_tok), val(_val) {}
 
-        Token token() const;
+        tokt token() const;
         std::vector<AstPtr> values() const;
         void accept() const;
     };
 
     class ArrayExpr: public Ast {
         private:
-        Token tok;
+        tokt tok;
         AstPtr arr;
         std::vector<AstPtr> index;
         public:
-        ArrayExpr(Token &_tok, AstPtr &_arr, std::vector<AstPtr> &_index)
+        ArrayExpr(tokt &_tok, AstPtr &_arr, std::vector<AstPtr> &_index)
         : tok(_tok), arr(_arr), index(_index) {}
 
-        Token token() const;
+        tokt token() const;
         AstPtr array() const;
         std::vector<AstPtr> arrayindex() const;
         void accept() const;
@@ -248,17 +248,17 @@ namespace ast{
 
     class BineryOp: public Ast {
         private:
-        Token tok;
+        tokt tok;
         AstPtr right;
-        Token op;
+        tokt op;
         AstPtr left;
         public:
-        BineryOp(Token &_tok, AstPtr &_right, Token &_op, AstPtr &_left)
+        BineryOp(tokt &_tok, AstPtr &_right, tokt &_op, AstPtr &_left)
         :tok(_tok), right(_right), op(_op), left(_left) {}
 
-        Token token() const;
+        tokt token() const;
         AstPtr rightOpr() const;
-        Token oprator() const;
+        tokt oprator() const;
         AstPtr leftOpr() const;
         void accept() const;
     };
@@ -271,13 +271,13 @@ namespace ast{
 
     class UneryOp: public Ast {
         private:
-        Token tok;
+        tokt tok;
         AstPtr var;
         public:
-        UneryOp(Token &_tok, AstPtr &_var)
+        UneryOp(tokt &_tok, AstPtr &_var)
         : tok(_tok), var(_var) {}
 
-        Token token() const;
+        tokt token() const;
         AstPtr variable() const;
         void accept() const;
     };
@@ -290,10 +290,10 @@ namespace ast{
         AstPtr condition;
         AstPtr expression;
         AstPtr loopbody;
-        Token tok;
+        tokt tok;
         public:
         ForLoopState(std::vector<AstPtr>&_var, AstPtr &_condition,
-                     AstPtr &_expression, AstPtr &_loopbody, Token &_tok)
+                     AstPtr &_expression, AstPtr &_loopbody, tokt &_tok)
             :var(_var),  expression(_expression), condition(_condition),
                          loopbody(_loopbody), tok(_tok) {}
 
@@ -301,7 +301,7 @@ namespace ast{
         AstPtr loopCondition() const;
         AstPtr loopExpression() const;
         AstPtr loopBody() const;
-        Token token() const;
+        tokt token() const;
         void accept() const;
 
     };
@@ -310,27 +310,27 @@ namespace ast{
         private:
         AstPtr expr;
         AstPtr loopbody;
-        Token tok;
+        tokt tok;
         public:
-        WhileLoopState(AstPtr &_expr, AstPtr &_loopbody, Token &_tok)
+        WhileLoopState(AstPtr &_expr, AstPtr &_loopbody, tokt &_tok)
             : expr(_expr), loopbody(_loopbody), tok(_tok) {}
 
         AstPtr expression() const;
         AstPtr loopBody() const;        
-        Token token() const;
+        tokt token() const;
         void accept() const;
     };
 
     class ElifStatement: public Ast {
         private:
-        Token tok;
+        tokt tok;
         AstPtr condition;
         AstPtr body;
         public:
-        ElifStatement(Token &_tok, AstPtr &_condition, AstPtr &_body)
+        ElifStatement(tokt &_tok, AstPtr &_condition, AstPtr &_body)
         : tok(_tok), condition(_condition), body(_body) {}
 
-        Token token() const;
+        tokt token() const;
         AstPtr elifcondition() const;
         AstPtr elifbody() const;
         void accept() const;
@@ -342,78 +342,78 @@ namespace ast{
         AstPtr ifbody;
         AstPtr elsebody;
         std::vector<AstPtr> elifbody;
-        Token token;
+        tokt tok;
         public:
         IfStatement(AstPtr &_condition , AstPtr &_ifbody, AstPtr &_elsebody,
-                     std::vector<AstPtr> &_elifbody, Token &_tok)
-        : condition(_condition), ifbody(_ifbody), elsebody(_elsebody), elifbody(_elifbody), token(_tok) {}
+                     std::vector<AstPtr> &_elifbody, tokt &_tok)
+        : condition(_condition), ifbody(_ifbody), elsebody(_elsebody), elifbody(_elifbody), tok(_tok) {}
         
         AstPtr condition() const;
         AstPtr ifbody() const;
         AstPtr elsebody() const;
         std::vector<AstPtr> elifbody() const;
-        Token token() const;
+        tokt token() const;
         void accept() const;
     };
 
      class PointerExpr: public Ast {
         private:
-        Token token;
+        tokt tok;
         AstPtr typePtr;
         public:
-        PointerExpr(Token &tok, AstPtr &_type)
-        : token(tok), typePtr(_type) {}
+        PointerExpr(tokt &tok, AstPtr &_type)
+        : tok(tok), typePtr(_type) {}
 
-        Token tok() const;
+        tokt token() const;
         AstPtr type() const;
         void accept() const;
     };
 
     class RefExpr: public Ast {
         private:
-        Token token;
+        tokt tok;
         AstPtr refType;
         public:
-        RefExpr(Token &tok, AstPtr &ref)
-        : token(tok), refType(ref) {}
+        RefExpr(tokt &_tok, AstPtr &ref)
+        : tok(_tok), refType(ref) {}
 
-        Token tok() const;
+        tokt token() const;
         AstPtr reftype() const;
         void accept() const;
     };
 
     class BreakState: public Ast {
         private:
-        Token tok;
+        tokt tok;
         public:
-        BreakState(Token &_tok)
+        BreakState(tokt &_tok)
         : tok(_tok) {}
 
-        Token token() const;
+        tokt token() const;
         void accept() const;
     };
 
     class ContinueState: public Ast {
         private:
-        Token tok;
+        tokt tok;
         public:
-        ContinueState(Token &_tok)
+        ContinueState(tokt &_tok)
         : tok(_tok) {}
 
-        Token token() const;
+        tokt token() const;
         void accept() const;
     };
 
     class ArrowExpr: public Ast {
         private:
-        Token tok;
+        tokt tok;
         AstPtr right;
         AstPtr left;
         public:
-        ArrowExpr(Token &_tok, AstPtr &_right, AstPtr &_left) 
+        ArrowExpr(tokt &_tok, AstPtr &_right, AstPtr &_left) 
         : tok(_tok), right(_right), left(_left) {}
 
-        Token token() const;
+        tokt token() const;
         AstPtr rightid() const;
         AstPtr leftid() const;
         void accept() const;
@@ -421,33 +421,43 @@ namespace ast{
 
      class DotExpr: public Ast {
         private:
-        Token tok;
+        tokt tok;
         AstPtr right;
         AstPtr left;
         public:
-        DotExpr(Token &_tok, AstPtr &_right, AstPtr &_left) 
+        DotExpr(tokt &_tok, AstPtr &_right, AstPtr &_left) 
         : tok(_tok), right(_right), left(_left) {}
 
-        Token token() const;
+        tokt token() const;
         AstPtr rightid() const;
         AstPtr leftid() const;
         void accept() const;
     };
 
+    class VarLeft:public Ast {
+
+    };
+    class VariableDef: public Ast {
+        private:
+        tokt tok;
+        std::vector<AstPtr>var;
+        std::vector<AstPtr>val;
+    };
+
     class VariableState: public Ast {
         private:
-        Token tok;
+        tokt tok;
         std::vector<AstPtr> name;
         AstPtr type;
-        AstPtr val;
+        std::vector<AstPtr> val;
         public:
-        VariableState(Token &_tok, std::vector<AstPtr> &_var, AstPtr &_type, AstPtr &_val)
+        VariableState(tokt &_tok, std::vector<AstPtr> &_var, AstPtr &_type, std::vector<AstPtr> &_val)
         : tok(_tok), name(_var), type(_type), val(_val) {}
 
-        Token token() const;
+        tokt token() const;
         std::vector<AstPtr> varname() const;
         AstPtr vartype() const;
-        AstPtr value() const;
+        std::vector<AstPtr> value() const;
         void accept() const;
     };
 
@@ -462,18 +472,18 @@ namespace ast{
 
     class FunctionDef: public Ast {
         private:
-        Token token;
+        tokt tok;
         AstPtr name;
         std::vector<param>parameter;
-        AstPtr returntype;
+        std::vector<AstPtr> returntype;
         AstPtr funcbody;
         public:
-        FunctionDef(Token &_tok, AstPtr &_name, std::vector<param>&_parameter,
-                                 AstPtr _retype, AstPtr &_uncbody)
-         : token(_tok), name(_name), parameter(_parameter),
+        FunctionDef(tokt &_tok, AstPtr &_name, std::vector<param>&_parameter,
+                                 std::vector<AstPtr> _retype, AstPtr &_uncbody)
+         : tok(_tok), name(_name), parameter(_parameter),
                          returntype(_retype), funcbody(funcbody) {}
 
-        Token token() const;
+        tokt token() const;
         AstPtr funcname() const;
         std::vector<param> paramVal() const;
         AstPtr retType() const;
@@ -483,27 +493,27 @@ namespace ast{
 
     class ReturnState: public Ast {
         private:
-        Token tok;
-        AstPtr val;
+        tokt tok;
+        std::vector<AstPtr> val;
         public:
-        ReturnState(Token &_tok, AstPtr &_val)
+        ReturnState(tokt &_tok, std::vector<AstPtr> &_val)
         : tok(_tok), val(_val) {}
 
-        Token token();
+        tokt token();
         AstPtr value();
         void accept() const;
     };
 
     class FunctionCall: public Ast {
         private:
-        Token tok;
+        tokt tok;
         AstPtr name;
         std::vector<AstPtr> args;
         public:
-        FunctionCall(Token &_tok, AstPtr &_name, std::vector<AstPtr>&_args)
+        FunctionCall(tokt &_tok, AstPtr &_name, std::vector<AstPtr>&_args)
         : tok(_tok), name(_name), args(_args) {}
 
-        Token token() const;
+        tokt token() const;
         AstPtr funcname() const;
         std::vector<AstPtr> arg() const;
         void accept() const;

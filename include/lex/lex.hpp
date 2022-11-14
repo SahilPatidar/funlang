@@ -97,10 +97,10 @@ namespace lex
         TAB,
         NEWL,
 
-        LBRACE,
-        RBRACE,
         LPAREN,
         RPAREN,
+        LBRACE,
+        RBRACE,
         LBRACK,
         RBRACK,
 
@@ -109,17 +109,17 @@ namespace lex
         _LAST
     };
     extern const char *token[_LAST];
-    struct tok
+    struct tokt
     {
         int line;
         int pos;
         std::string data;
         Token_type tok_type;
-        tok(const int &_line, const int &_pos, const std::string &_data, const int &_type)
+        tokt(const int &_line, const int &_pos, const std::string &_data, const int &_type)
 		:line(_line), pos(_pos),  data(_data), tok_type((Token_type)_type)
 	    {}
     };
-    typedef std::vector<tok> tok_t;
+    typedef std::vector<tokt> tok_t;
 
     bool tokenizer(const std::string &src, tok_t &tokes, int begin, int end);
 

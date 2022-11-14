@@ -96,6 +96,7 @@ namespace parser {
         return statm;
     }
 
+
     AstPtr Parser::parseFuncCall() {
         Token_type tok = cur_token;
         AstPtr name;
@@ -109,8 +110,13 @@ namespace parser {
         }
         advance();
 
-        while(cur_token){
-
+        while(cur_token != RBRACE){
+            AstPtr arg;
+            arg = parseExpression();
+            if(cur_token != COL){
+                std::cerr<<"error:invalid expression "<<token[cur_token]<<std::endl;
+            }
+            args.push_back(arg);
         }
 
         if(cur_token != LBRACE){
@@ -122,6 +128,24 @@ namespace parser {
     }
 
 
+
+    std::vector<param> Parser::parseParamList() {
+        if(cur_token != LBRACE) {
+            std::cerr<<"error:invalid expression "<<token[cur_token]<<std::endl;
+        }
+        advance();
+
+        std::vector<param> param;
+        while(cur_token != RBRACE){
+            param c =;
+
+        }
+
+
+        advance();
+
+    }
+
     AstPtr Parser::parseFuncdef(){
         Token_type tok = cur_token;
         AstPtr name;
@@ -130,21 +154,12 @@ namespace parser {
         AstPtr body;
 
         name = parseIdentifier();
-        if(cur_token != LBRACE) {
-            std::cerr<<"error:invalid expression "<<token[cur_token]<<std::endl;
-        }
-        advance();
 
-
-
-        if(cur_token != RBRACE) {
-            std::cerr<<"error:invalid expression "<<token[cur_token]<<std::endl;
-        }
-        advance();
+        parameter = parseParamList();
 
         retype = parseType();
 
-         if(cur_token != LPAREN) {
+        if(cur_token != LPAREN) {
             std::cerr<<"error:invalid expression "<<token[cur_token]<<std::endl;
         }
         advance();
@@ -166,7 +181,7 @@ namespace parser {
         AstPtr val;
         val = parseExpression();
         if(cur_token != SCOL){
-            exit(EXIT_FAILURE);
+            std::cerr<<"invalid expression "<<token[cur_token]<<std::endl;
         }
         advance();
         return std::make_shared<ReturnState>(tok, val);
@@ -182,7 +197,6 @@ namespace parser {
 
         if( cur_token != LPAREN ){
             std::cerr<<"invalid expression "<<token[cur_token]<<std::endl;
-            exit(EXIT_FAILURE);
         }
         advance();
 
@@ -190,7 +204,6 @@ namespace parser {
         
         if( cur_token != RPAREN ){
             std::cerr<<"invalid expression "<<token[cur_token]<<std::endl;
-            exit(EXIT_FAILURE);
         }
         advance();
 

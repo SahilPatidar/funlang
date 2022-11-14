@@ -167,7 +167,7 @@ namespace lex
                     return false;
                 }
                 Token_type tok_name = get_keyword(str);
-                toks.push_back(tok(line, i - line_start - start_pos, str, tok_name));
+                toks.push_back(tokt(line, i - line_start - start_pos, str, tok_name));
                 continue;
             }
 
@@ -179,7 +179,7 @@ namespace lex
                     printf("error: number\n");
                     return false;
                 }
-                toks.push_back(tok(line, i - line_start - start_pos, str ,type));
+                toks.push_back(tokt(line, i - line_start - start_pos, str ,type));
                 continue;
 
             }
@@ -191,16 +191,16 @@ namespace lex
                     printf("error in const string %d\n",i);
                     return false;
                 }
-                toks.push_back(tok(line, i - line_start - start_pos, str, quote=='\"'?STR:CHAR));
+                toks.push_back(tokt(line, i - line_start - start_pos, str, quote=='\"'?STR:CHAR));
                 continue;
             }
             Token_type type = INVALID;
             if(get_operator(src, type, i)){
-                toks.push_back(tok(line, i - line_start - start_pos, token[type], type));
+                toks.push_back(tokt(line, i - line_start - start_pos, token[type], type));
                 continue;
             }
         }
-        toks.push_back(tok(line, i - line_start - start_pos, token[FEOF], FEOF));
+        toks.push_back(tokt(line, i - line_start - start_pos, token[FEOF], FEOF));
         return true;
     }
     
@@ -568,13 +568,13 @@ namespace lex
             case ']':
                 SET(RBRACK);
             case '(':
-                SET(LBRACE);
-            case ')':
-                SET(RBRACE);
-            case '{':
                 SET(LPAREN);
-            case '}':
+            case ')':
                 SET(RPAREN);
+            case '{':
+                SET(LBRACE);
+            case '}':
+                SET(RBRACE);
 
 
             default:
