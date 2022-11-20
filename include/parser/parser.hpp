@@ -14,6 +14,7 @@ namespace parser{
         std::string file_name;
         Token_type next();
         void advance();
+        void expectToken(Token_type tok);
         AstPtr parseBlockStatement();
         AstPtr parseIdentifier();
         AstPtr parseType();
@@ -24,22 +25,23 @@ namespace parser{
         AstPtr parseOp();
         AstPtr parseArray();
         AstPtr parseFor();
-        AstPtr parseWhile();
         AstPtr parseEnum();
         AstPtr parseStruct();
         AstPtr parseReturn();
         AstPtr parseTypeCast();
         AstPtr parseExpression();
-        AstPtr parseIf();
-        AstPtr parseElif();
+        AstPtr parseIfStatm();
+        AstPtr parseifHeader();
         AstPtr parseConst();
         AstPtr parseStatement();
         AstPtr parseVar();
+        AstPtr parseVarList();
         AstPtr parseFuncdef();
         AstPtr parseFuncCall();
-        std::vector<param> parseParamList();
+        AstPtr parseArgList();
+        AstPtr parseParamList();
         public:
-        Parser(lex::tok_t& _toks, std::string _path, std::string _file_name)
+        Parser(tok_t &_toks, std::string _path, std::string _file_name)
         :toks(_toks), path(_path), file_name(_file_name) {}
         ~Parser();
         AstPtr parse();

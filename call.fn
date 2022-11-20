@@ -1,5 +1,9 @@
 io = import(std)
 
+fn call() (caller,i8) {
+    
+}
+
 fn main() i32 {
     var a string;
     var d = 232;

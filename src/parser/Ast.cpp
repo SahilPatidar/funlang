@@ -11,15 +11,6 @@ namespace ast {
         return statement;
     }
 
-
-    tokt BlockStatement::token() const {
-        return tok;
-    }
-
-    std::vector<AstPtr> BlockStatement::statements() const{
-        return statement;
-    }
-
     tokt IntergerLitral::token() const {
         return tok;
     }
@@ -64,12 +55,16 @@ namespace ast {
         return id;
     }
 
-    tokt BlockStatement::token() const {
-        return tok;
+    int BlockStatement::lParen() const {
+        return lpos;
     }
 
-    std::vector<AstPtr> BlockStatement::statements() const {
-        return statement;
+    int BlockStatement::rParen() const {
+        return rpos;
+    }
+
+    AstPtr BlockStatement::statement() const {
+        return statm;
     }
 
     tokt EnumLitral::token() const {
@@ -96,31 +91,19 @@ namespace ast {
         return tok;
     }
 
-    std::vector<AstPtr> ForLoopState::variable() const {
-        return var;
+    AstPtr ForLoopState::variable() const {
+        return h1;
     }
 
     AstPtr ForLoopState::loopCondition() const {
-        return condition;
+        return h2;
     }
 
     AstPtr ForLoopState::loopExpression() const {
-        return expression;
+        return h3;
     }
 
     AstPtr ForLoopState::loopBody() const {
-        return loopbody;
-    }
-    
-    tokt WhileLoopState::token() const {
-        return tok;
-    }
-
-    AstPtr WhileLoopState::expression() const {
-        return expr;
-    }
-
-    AstPtr WhileLoopState::loopBody() const {
         return loopbody;
     }
 

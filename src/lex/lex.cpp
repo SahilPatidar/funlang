@@ -16,6 +16,7 @@ namespace lex
         "const",
         "fn",
         "for",
+        "in",
         "var",
         "while",
         "return",
@@ -235,7 +236,9 @@ namespace lex
         if(src == token[UI32])return UI32;
         if(src == token[UI64])return UI64;
         if(src == token[F32])return F32;
+        if(src == token[IN])return IN;
         if(src == token[F64])return F64;
+
         return IDEN;
     }
 

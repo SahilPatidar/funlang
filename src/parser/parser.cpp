@@ -8,12 +8,7 @@ namespace parser {
         return ;
     }
 
-    AstPtr Parser::parseExpression() {
-        AstPtr expr;
-        while(cur_token != SCOL){
 
-        }
-    }
 
     AstPtr Parser::parseType() {
         AstPtr type;
@@ -26,16 +21,16 @@ namespace parser {
             case UI16:
             case UI32:
             case UI64:
-                type = std::make_shared<IntType>(cur_token);
+                type = std::make_shared<IntType>(toks[cur_index]);
                 break;
             case F32:
             case F64:
-                type = std::make_shared<FloatType>(cur_token);
+                type = std::make_shared<FloatType>(toks[cur_index]);
                 break;
             case STRING:
-                type = std::make_shared<StringType>(cur_token);
+                type = std::make_shared<StringType>(toks[cur_index]);
             case BOOL:
-                type = std::make_shared<BoolType>(cur_token); 
+                type = std::make_shared<BoolType>(toks[cur_index]); 
 
         }
         return type;
@@ -51,11 +46,7 @@ namespace parser {
                 break;
 
             case IF:
-                statm = parseIf();
-                break;
-
-            case WHILE:
-                statm = parseWhile();
+                statm = parseIfStatm();
                 break;
 
             case VAR:
@@ -67,7 +58,7 @@ namespace parser {
                 break;
 
             case CONTINUE:
-                statm = std::make_shared<ContinueState>(cur_token);
+                statm = std::make_shared<BranchState>(toks[cur_index]);
                 break;
 
             case CONST:
@@ -75,7 +66,7 @@ namespace parser {
                 break;
 
             case BREAK:
-                statm = std::make_shared<BreakState>(cur_token);
+                statm = std::make_shared<BranchState>(toks[cur_index]);
                 break;
 
             case STRUCT:
@@ -96,168 +87,95 @@ namespace parser {
         return statm;
     }
 
+    AstPtr Parser::parseArgList(){
+        int pos = cur_index;
+        std::vector<AstPtr>args;
+        int isRight_P = 1;
+        expectToken(LPAREN);
+        while(cur_token != RPAREN||isRight_P != 1) {
+            
+        }
+        expectToken(RPAREN);
+        return std::make_shared<FeildList>(toks[pos],args);
+    }
 
     AstPtr Parser::parseFuncCall() {
-        Token_type tok = cur_token;
+        int pos = cur_index;
         AstPtr name;
-        std::vector<AstPtr> args;
-        advance();
-
+        AstPtr args;
         name = parseIdentifier();
-
-        if(cur_token != LBRACE){
-            std::cerr<<"error:invalid expression "<<token[cur_token]<<std::endl;
-        }
-        advance();
-
-        while(cur_token != RBRACE){
-            AstPtr arg;
-            arg = parseExpression();
-            if(cur_token != COL){
-                std::cerr<<"error:invalid expression "<<token[cur_token]<<std::endl;
-            }
-            args.push_back(arg);
-        }
-
-        if(cur_token != LBRACE){
-            std::cerr<<"error:invalid expression "<<token[cur_token]<<std::endl;
-        }
-        advance();
         
-        return std::make_shared<FunctionCall>(tok, name, args);
+        args = parseArgList();
+        return std::make_shared<FunctionCall>(toks[pos], name, args);
     }
 
-
-
-    std::vector<param> Parser::parseParamList() {
-        if(cur_token != LBRACE) {
-            std::cerr<<"error:invalid expression "<<token[cur_token]<<std::endl;
-        }
-        advance();
-
-        std::vector<param> param;
-        while(cur_token != RBRACE){
-            param c =;
-
-        }
-
-
-        advance();
-
-    }
 
     AstPtr Parser::parseFuncdef(){
-        Token_type tok = cur_token;
+        int pos = cur_index;
         AstPtr name;
-        std::vector<param>parameter;
+        AstPtr parameter;
         AstPtr retype;
         AstPtr body;
+        expectToken(FN);
 
         name = parseIdentifier();
 
+        expectToken(LPAREN);
         parameter = parseParamList();
-
+        expectToken(RPAREN);
         retype = parseType();
 
-        if(cur_token != LPAREN) {
-            std::cerr<<"error:invalid expression "<<token[cur_token]<<std::endl;
-        }
-        advance();
+        expectToken(LBRACE);
 
         body = parseBlockStatement();
 
-        if(cur_token != RPAREN) {
-            std::cerr<<"error:invalid expression "<<token[cur_token]<<std::endl;
-        }
-        advance();
+        expectToken(RBRACE);
 
-        return std::make_shared<FunctionDef>(tok, name, parameter, retype, body);
+        return std::make_shared<FunctionDef>(toks[cur_index], name, parameter, retype, body);
     }
 
 
     AstPtr Parser::parseReturn() {
-        Token_type tok = cur_token;
-        advance();
+        int pos = cur_index;
+        expectToken(RETURN);
         AstPtr val;
         val = parseExpression();
-        if(cur_token != SCOL){
-            std::cerr<<"invalid expression "<<token[cur_token]<<std::endl;
-        }
-        advance();
-        return std::make_shared<ReturnState>(tok, val);
+        expectToken(SCOL);
+        return std::make_shared<ReturnState>(toks[pos], val);
     }
 
-    AstPtr Parser::parseElif() {
-        Token_type tok = cur_token;
-        advance();
+    AstPtr Parser::parseifHeader() {
+        AstPtr expr;
 
-        AstPtr condition, body;
+        while(cur_token != LBRACE) {
 
-        condition = parseExpression();
-
-        if( cur_token != LPAREN ){
-            std::cerr<<"invalid expression "<<token[cur_token]<<std::endl;
-        }
-        advance();
-
-        body = parseBlockStatement();
-        
-        if( cur_token != RPAREN ){
-            std::cerr<<"invalid expression "<<token[cur_token]<<std::endl;
-        }
-        advance();
-
-        return std::make_shared<ElifStatement>(tok, condition, body);
+        }        
     }
-   
-    AstPtr Parser::parseIf() {
-        Token_type tok = cur_token;
-        advance();
+       
+    AstPtr Parser::parseIfStatm() {
+        int pos = cur_index;
+        expectToken(IF);
         AstPtr condition;
-        AstPtr ifbody;
-        AstPtr elsebody;
-        condition = parseExpression();
+        AstPtr if_;
+        AstPtr else_;
 
-        if( cur_token != LPAREN ){
-            std::cerr<<"invalid expression "<<token[cur_token]<<std::endl;
-            exit(EXIT_FAILURE);
-        }
-
-        advance();
-
-        ifbody = parseBlockStatement();
+        condition = parseifHeader();
         
-        if( cur_token != RPAREN ){
-            std::cerr<<"invalid expression "<<token[cur_token]<<std::endl;
-            exit(EXIT_FAILURE);
-        }
-            
-        advance();
+        if_ = parseBlockStatement();
 
-        std::vector<AstPtr> elifbody;
-
-        while(cur_token == ELIF){
-            AstPtr body = parseElif();
-            elifbody.push_back(body);
-        }
         if(cur_token == ELSE) {
-            if( cur_token != LPAREN ){
-                std::cerr<<"invalid expression: "<<token[cur_token]<<std::endl;
-                exit(EXIT_FAILURE);
-            }
             advance();
-
-            elsebody = parseBlockStatement();
-            
-            if( cur_token != RPAREN ){
-                std::cerr<<"invalid expression: "<<token[cur_token]<<std::endl;
-                exit(EXIT_FAILURE);
+            switch(cur_token){
+                case IF:
+                    else_ = parseIfStatm();
+                case LBRACE:
+                    else_ = parseBlockStatement();
+                default:
+                    //err
             }
-            advance();
         }
 
-
-        return std::make_shared<IfStatement>(condition, ifbody, elifbody, elsebody);
+        return std::make_shared<IfStatement>(condition, if_, else_);
 
     }
 
@@ -265,70 +183,53 @@ namespace parser {
 
     }
 
-    AstPtr Parser::parseWhile() {
-        Token_type tok =cur_token;
-        advance();
-        AstPtr expr;
-        AstPtr body;
-
-        expr = parseExpression();
-
-        if(cur_token != LPAREN){
-            std::cerr<<"invalid expression "<<token[cur_token]<<std::endl;
-        }
-        advance();
-
-        body = parseBlockStatement();
-
-        if(cur_token != RPAREN){
-            std::cerr<<"invalid expression "<<token[cur_token]<<std::endl;
-        }
-        advance();
-        
-        return std::make_shared<WhileLoopState>(expr, body, tok);
-    }
 
     AstPtr Parser::parseFor() {
-        Token_type tok = cur_token;
+        int pos = cur_index;
+        AstPtr h1, h2, h3, body;
         advance();
-        std::vector<AstPtr> var = {};
-       
-        while(cur_token != SCOL){
-            AstPtr vr = parseVar();
-
-            if(cur_token != COMMA && cur_token != SCOL){
-                std::cerr<<"invalid expression "<<std::to_string(cur_token)<<std::endl;
-                exit(EXIT_FAILURE);
-            }
+        bool isIN = false;
+        if(cur_token != LBRACE) {
             advance();
-            var.push_back(vr); 
+            if(cur_token != SCOL) {
+                if(cur_token != IN){
+                    // like in go lang nil lhs
+
+                    advance();
+                    isIN = true;
+                    
+                } else {
+                    h2 = parseStatement();
+                }
+            } 
+
+            if(!isIN && cur_token == SCOL) {
+                advance();
+                h1 = h2;
+                h2 = NULL;
+                if(cur_token != SCOL){
+                    h2 = parseStatement();
+                }
+                expectToken(SCOL);
+                if(cur_token != LBRACE){
+                    h3 = parseExpression();
+                }
+            } else {
+                //error
+            }
+
+        } 
+        
+        body = parseBlockStatement();
+        expectToken(LBRACE);
+
+        if(isIN){
+
+
         }
 
-        AstPtr condi = parseExpression();
-
-        if(cur_token != SCOL){
-            std::cerr<<"invalid expression "<<token[cur_token]<<std::endl;
-            exit(EXIT_FAILURE);
-        }
-
-        advance();
-        AstPtr expr = parseExpression();
-
-        if(cur_token != LPAREN){
-            std::cerr<<"invalid expression "<<token[cur_token]<<std::endl;
-            exit(EXIT_FAILURE);
-        }
-        advance();
-
-        AstPtr body = parseBlockStatement();
-
-        if(cur_token != RPAREN){
-            std::cerr<<"invalid expression "<<token[cur_token]<<std::endl;
-            exit(EXIT_FAILURE);
-        }
-        advance();
-
-        return std::make_shared<ForLoopState>(var, condi, expr, body, tok);
+        return std::make_shared<ForLoopState>(h1,h2,h3,body,toks[pos]);
+        
     
     }
 }

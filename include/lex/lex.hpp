@@ -20,6 +20,7 @@ namespace lex
         CONST,
         FN,
         FOR,
+        IN,
         VAR,
         WHILE,
         RETURN,
