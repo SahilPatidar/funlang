@@ -30,10 +30,35 @@ namespace parser {
             case STRING:
                 type = std::make_shared<StringType>(toks[cur_index]);
             case BOOL:
-                type = std::make_shared<BoolType>(toks[cur_index]); 
+                type = std::make_shared<BoolType>(toks[cur_index]);
+            case LBRACK:
+                type = parseArrayType(); 
+            case STRUCT:
+                type = parseStruct();
 
         }
         return type;
+    }
+
+    AstPtr Parser::parseArrayType() {
+        AstPtr len, type;
+        tokt tok = toks[cur_index];
+        advance();
+        if(cur_token == RBRACK){
+            //err
+        } else {
+            len = parseExpression();
+        }
+        expectToken(RBRACK);
+        type = parseType();
+        return std::make_shared<ArrayType>(tok, len, type);
+    }
+
+    AstPtr Parser::parseStruct() {
+        tokt tok = toks[cur_index];
+        AstPtr element;
+        
+        return std::make_shared<StructState>(tok, element);
     }
 
     //============------------statement------------================
@@ -50,7 +75,7 @@ namespace parser {
                 break;
 
             case VAR:
-                statm = parseVar();
+                statm = parseVarStatm();
                 break;
 
             case RETURN:
@@ -87,25 +112,94 @@ namespace parser {
         return statm;
     }
 
-    AstPtr Parser::parseArgList(){
-        int pos = cur_index;
-        std::vector<AstPtr>args;
-        int isRight_P = 1;
-        expectToken(LPAREN);
-        while(cur_token != RPAREN||isRight_P != 1) {
+    AstPtr Parser::parseBlockStatement() {
+        int lpos, rpos;
+        std::vector<AstPtr> statms;
+        int lpos = cur_index;
+        
+        expectToken(LBRACE);
+        
+        if(cur_token != RBRACE){
+            do {
+                
+                AstPtr statm;
+                
+                statm = parseStatement();
+                
+                statms.push_back(statm);
             
+            } while(cur_token != RBRACE);
         }
-        expectToken(RPAREN);
-        return std::make_shared<FeildList>(toks[pos],args);
+
+        expectToken(RBRACE);
+        
+        return std::make_shared<BlockStatement>(lpos, statms, rpos);
     }
+
+    AstPtr Parser::parseExpression() {
+
+
+    }
+
+    AstPtr Parser::parseUnaryExpr() {
+
+    }
+
+    AstPtr Parser::parseBineryExpr(AstPtr left, int prev_prece) {
+        tokt tok = toks[cur_index];
+        Token_type opr;
+        AstPtr right;
+        if(left == NULL) {
+            left = parseExpression();
+        }
+        //2+3*3/4+2*3
+        while(1){
+            opr = cur_token;
+            if(prev_prece > m_preced[opr]) {
+                return left;
+            }
+            advance();
+            right = parseBineryExpr(NULL, m_preced[opr]);
+            left = std::make_shared<BineryOp>(tok, left, opr, right);
+        }
+
+        return left;
+    }
+
+    AstPtr Parser::parseParenExpr() {
+
+    }
+
+    AstPtr Parser::parseArgList() {
+        int lpos, rpos;
+        lpos = cur_index;
+        std::vector<AstPtr>args;
+        expectToken(LPAREN);
+        if(cur_token != RPAREN){
+            do {
+                AstPtr arg;
+
+                arg = parseExpression();
+
+                args.push_back(arg);
+
+            } while(cur_token != COMMA);
+        }
+        rpos = cur_index;
+        expectToken(RPAREN);
+        return std::make_shared<FeildList>(lpos,args,rpos);
+    }
+
+
 
     AstPtr Parser::parseFuncCall() {
         int pos = cur_index;
         AstPtr name;
-        AstPtr args;
+        AstPtr args = NULL;
         name = parseIdentifier();
         
         args = parseArgList();
+
         return std::make_shared<FunctionCall>(toks[pos], name, args);
     }
 
@@ -125,11 +219,7 @@ namespace parser {
         expectToken(RPAREN);
         retype = parseType();
 
-        expectToken(LBRACE);
-
         body = parseBlockStatement();
-
-        expectToken(RBRACE);
 
         return std::make_shared<FunctionDef>(toks[cur_index], name, parameter, retype, body);
     }
@@ -139,18 +229,11 @@ namespace parser {
         int pos = cur_index;
         expectToken(RETURN);
         AstPtr val;
-        val = parseExpression();
+        
         expectToken(SCOL);
         return std::make_shared<ReturnState>(toks[pos], val);
     }
 
-    AstPtr Parser::parseifHeader() {
-        AstPtr expr;
-
-        while(cur_token != LBRACE) {
-
-        }        
-    }
        
     AstPtr Parser::parseIfStatm() {
         int pos = cur_index;
@@ -159,7 +242,11 @@ namespace parser {
         AstPtr if_;
         AstPtr else_;
 
-        condition = parseifHeader();
+        if(cur_token == LBRACE) {
+            //err
+        } else {
+            condition = parseExpression();
+        }
         
         if_ = parseBlockStatement();
 
@@ -174,30 +261,46 @@ namespace parser {
                     //err
             }
         }
-
+        expectToken(RBRACE);
         return std::make_shared<IfStatement>(condition, if_, else_);
-
     }
 
-    AstPtr Parser::parseVar() {
 
+    AstPtr Parser::parseVarStatm() {
+        tokt tok = toks[cur_index];
+        AstPtr var, type;
+        expectToken(VAR);
+        var = parseVarList();
+        type = parseType();
+        return std::make_shared<VariableState>(tok, var, type);
+    }
+
+    AstPtr Parser:: parseAssignment(AstPtr left) {
+        tokt tok = toks[cur_index];
+        AstPtr right;
+        Token_type op;
+        op = cur_token;
+        expectToken(ASSN);
+        right = parseExpression();
+        expectToken(SCOL);
+        return std::make_shared<AssignmentState>(tok, left, op, right);
     }
 
 
     AstPtr Parser::parseFor() {
         int pos = cur_index;
         AstPtr h1, h2, h3, body;
-        advance();
+        expectToken(FOR);
         bool isIN = false;
         if(cur_token != LBRACE) {
-            advance();
+            
             if(cur_token != SCOL) {
                 if(cur_token != IN){
                     // like in go lang nil lhs
 
                     advance();
                     isIN = true;
-                    
+
                 } else {
                     h2 = parseStatement();
                 }
@@ -212,19 +315,17 @@ namespace parser {
                 }
                 expectToken(SCOL);
                 if(cur_token != LBRACE){
-                    h3 = parseExpression();
+                    h3 = parseStatement();
                 }
-            } else {
-                //error
-            }
+            } 
 
         } 
         
         body = parseBlockStatement();
-        expectToken(LBRACE);
+        // expectToken(LBRACE);
 
         if(isIN){
-
+            
 
         }
 

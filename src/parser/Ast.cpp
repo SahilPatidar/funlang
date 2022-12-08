@@ -63,7 +63,7 @@ namespace ast {
         return rpos;
     }
 
-    AstPtr BlockStatement::statement() const {
+    std::vector<AstPtr> BlockStatement::statement() const {
         return statm;
     }
 

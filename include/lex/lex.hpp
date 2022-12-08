@@ -122,7 +122,7 @@ namespace lex
     };
     typedef std::vector<tokt> tok_t;
 
-    bool tokenizer(const std::string &src, tok_t &tokes, int begin, int end);
+    bool tokenizer(const std::string &src, tok_t &toks, int begin, int end);
 
 }
 

@@ -118,14 +118,14 @@ namespace ast{
     class BlockStatement: public Ast {
         private:
         int lpos;
-        AstPtr statm;
+        std::vector<AstPtr> statm;
         int rpos;
         public:
-        BlockStatement(int &_lpos, int &_rpos ,AstPtr &_state)
+        BlockStatement(int &_lpos, int &_rpos, std::vector<AstPtr> &_state)
             :lpos(_lpos), rpos(_rpos), statm(_state) {}
 
         int lParen() const;
-        AstPtr statement() const;
+        std::vector<AstPtr> statement() const;
         int rParen() const;
         void accept() const;
     };
@@ -188,6 +188,21 @@ namespace ast{
         void accept() const;
     };
 
+    class TypeState: public Ast {
+        private:
+        tokt tok;
+        AstPtr dest;
+        AstPtr src;
+        public:
+        TypeState(tokt &_tok, AstPtr &_dest, AstPtr &_src)
+        : tok(_tok), dest(_dest), src(_src) {}
+
+        tokt token() const;
+        AstPtr destination() const;
+        AstPtr source() const;
+        void accept() const;
+    };
+
     class ConstExpr: public Ast {
         private:
         tokt tok;
@@ -220,42 +235,31 @@ namespace ast{
         void accept() const;
     };
 
-    
-
-    class ParenExpr: public Ast {
+    class ComposeExpr: public Ast{
         private:
-        int lpos;
+        tokt tok;
         AstPtr expr;
-        int rpos;
-        ParenExpr(int &_lpos, AstPtr &_expr, int &_rpos)
-        : lpos(_lpos), expr(_expr), rpos(_rpos) {}
+        AstPtr field;
+        public:
+        ComposeExpr(tokt &_tok, AstPtr &_expr, AstPtr &_field) 
+        : tok(_tok), expr(_expr), field(_field) {}
 
-        int LPos() const;
-        AstPtr expression() const;
-        int RPos() const;
-        void accept() const;  
+        tokt token() const;
+        AstPtr exr() const;
+        AstPtr field() const;
+        void accept() const;
     };
 
-    // class CompositeExpr: public Ast {
-    //     private:
-    //     AstPtr type;
-    //     AstPtr expr;
-    //     int 
-
-
-    // };
-
-    
 
     class BineryOp: public Ast {
         private:
         tokt tok;
-        AstPtr right;
-        tokt op;
         AstPtr left;
+        tokt op;
+        AstPtr right;
         public:
-        BineryOp(tokt &_tok, AstPtr &_right, tokt &_op, AstPtr &_left)
-        :tok(_tok), right(_right), op(_op), left(_left) {}
+        BineryOp(tokt &_tok, AstPtr &_left, tokt &_op, AstPtr &_right)
+        :tok(_tok), left(_left), op(_op), right(_right) {}
 
         tokt token() const;
         AstPtr rightOpr() const;
@@ -270,12 +274,12 @@ namespace ast{
     //     public:
     // };
 
-    class UneryOp: public Ast {
+    class UnaryOp: public Ast {
         private:
         tokt tok;
         AstPtr var;
         public:
-        UneryOp(tokt &_tok, AstPtr &_var)
+        UnaryOp(tokt &_tok, AstPtr &_var)
         : tok(_tok), var(_var) {}
 
         tokt token() const;
@@ -365,48 +369,49 @@ namespace ast{
         void accept() const;
     };
 
-    
 
-    class ArrowExpr: public Ast {
+     class MemberExpr: public Ast {
         private:
         tokt tok;
         AstPtr right;
+        Token_type mem_op;
         AstPtr left;
         public:
-        ArrowExpr(tokt &_tok, AstPtr &_right, AstPtr &_left) 
-        : tok(_tok), right(_right), left(_left) {}
+        MemberExpr(tokt &_tok, AstPtr &_left, Token_type &_mem_op, AstPtr &_right) 
+        : tok(_tok), mem_op(_mem_op), left(_left) ,right(_right) {}
 
         tokt token() const;
         AstPtr rightid() const;
+        Token_type mem_operator() const;
         AstPtr leftid() const;
         void accept() const;
     };
 
-     class DotExpr: public Ast {
+    class StructState: public Ast {
         private:
         tokt tok;
-        AstPtr right;
-        AstPtr left;
+        AstPtr elemt;
         public:
-        DotExpr(tokt &_tok, AstPtr &_right, AstPtr &_left) 
-        : tok(_tok), right(_right), left(_left) {}
+        StructState(tokt &_tok, AstPtr &_mem)
+        : tok(_tok), elemt(_mem) {}
 
         tokt token() const;
-        AstPtr rightid() const;
-        AstPtr leftid() const;
+        AstPtr element() const;
         void accept() const;
     };
 
     class FeildList:public Ast {
         private:
-        tokt tok;
+        int lpos;
         std::vector<AstPtr>list;
+        int rpos;
         public:
-        FeildList(tokt &_tok, std::vector<AstPtr> &_list)
-        : tok(_tok), list(_list) {}
+        FeildList(int &_lpos, std::vector<AstPtr> &_list, int &_rpos)
+        :lpos(_lpos), list(_list), rpos(_rpos) {}
 
-        tokt token() const;
+        int lposition() const;
         std::vector<AstPtr> listof() const;
+        int rposition() const;
         void accept() const;
     };
 
