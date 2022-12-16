@@ -2,7 +2,7 @@
 
 namespace parser {
     
-    void Parser::advance() {
+    void Parser::next() {
         if(cur_index + 1 < toks.size()) {
             ++cur_index;
             cur_token = toks[cur_index].tok_type;
@@ -15,15 +15,19 @@ namespace parser {
 
     void Parser::expectToken(Token_type tok){
         if(toks[cur_index].tok_type == tok){
-            advance();
+            next();
         }else {
             expectErr(cur_index);
-            advance();
+            next();
         }
     }
 
+    __attribute__((flatten)) inline bool Parser::match2(Token_type t1, Token_type t2) {
+        return cur_token == t1 || cur_token == t2;
+    }
+
     
-    tokt Parser::next() {
+    tokt Parser::next_t() {
         return (cur_index+1 < toks.size())?toks[cur_index+1]:toks[cur_index];
     }
 

@@ -1,14 +1,16 @@
-import(std)
+import {  }
 type car enum{
 
 };
+
 type c struct {
 
 };
-fn main():i32 {
+
+fn main() i32 {
    var i[] i32;
    var c ,ca, cd i8;
-   c, a ,d = "d",43,4.45;
+   d = "d";
    var s = "hello";
-   return 0;
+   return;
 };

@@ -8,9 +8,13 @@
 
 using namespace lex;
 namespace ast{
+
+
+    class Ast {
     
-    class Ast{
-        public:
+    protected:
+        tok_t token_list;
+    public:
         virtual ~Ast() = default;
     };
    
@@ -18,10 +22,10 @@ namespace ast{
 
     class Program: public Ast {
         private:
-        tokt tok;
+        uint tok;
         std::vector<AstPtr> statement;
         public:
-        Program(tokt &_tok, std::vector<AstPtr>&_state) 
+        Program(uint &_tok, std::vector<AstPtr>&_state) 
         :tok(_tok), statement(_state) {}
 
         tokt token() const;
@@ -29,88 +33,82 @@ namespace ast{
         void accept() const;
     };
 
-    class IntergerLitral: public Ast {
+  
+    class NumericLitral: public Ast {
         private:
-        tokt tok;
-        std::string Int;
+        uint tok;
+      
+      //  std::string Int;
         public:
-        IntergerLitral(std::string &_int, tokt &_tok)
-        : Int(_int), tok(_tok) {}
+        NumericLitral(uint &_tok)
+        : tok(_tok) {}
 
         std::string value() const;
-        tokt token() const;
+        uint token() const;
         void accept() const;
     };
 
     class BoolLitral: public Ast {
         private:
-        std::string val;
-        tokt tok;
+      //  std::string val;
+        uint tok;
         public:
-        BoolLitral(std::string &_val, tokt &_tok)
-        : val(_val), tok(_tok) {}
+        BoolLitral(uint &_tok)
+        : tok(_tok) {}
 
         std::string value() const;
-        tokt token() const;
+        uint token() const;
         void accept() const;
     };
 
     class StringLitral: public Ast {
         private:
-        std::string str;
-        tokt tok;
+        uint tok;
         bool chr;
         public:
-        StringLitral(tokt &_tok, std::string &_str, bool _chr)
-        : tok(_tok), str(_str), chr(_chr) {}
+        StringLitral(uint &_tok, bool _chr)
+        : tok(_tok), chr(_chr) {}
 
         std::string value() const;
-        tokt token() const;
+        uint token() const;
         bool ischar() const;
         void accept() const;
     };
 
-    class NoLiteral: public AstPtr {
-        public:
-        NoLiteral() = default;
-        tokt token() const;
-        void accept() const;
-    };
 
-    class NullLitral: public AstPtr {
+    class NullLitral: public Ast {
         private:
-        tokt tok;
+        uint tok;
         public:
-        NullLitral(tokt &_tok)
+        NullLitral(uint &_tok)
         : tok(_tok) {}
 
-        tokt token() const;
+        uint token() const;
         void accept() const;
     };
 
     class FloatLitral: public Ast {
         private:
-        std::string flt;
-        tokt tok;
+        uint tok;
         public:
-        FloatLitral(std::string &_flt, tokt &_tok)
-            : flt(_flt), tok(_tok) {}
+        FloatLitral(uint &_tok)
+            :tok(_tok) {}
 
         std::string value() const;
-        tokt token() const;
+        uint token() const;
         void accept() const;
     };
 
     class Identifier: public Ast {
         private:
-        tokt tok;
+        uint tok;
         std::string id;
         public:
-        Identifier(std::string &id, tokt &_tok)
+        Identifier(std::string &id, uint &_tok)
             :id(id), tok(_tok) {}
 
-        std::string value() const;
-        tokt token() const;
+        std::string iden() const { return id; }
+        tokt token() const { return token_list[tok]; }
         void accept() const;
     };
 
@@ -118,172 +116,216 @@ namespace ast{
     class BlockStatement: public Ast {
         private:
         int lpos;
-        std::vector<AstPtr> statm;
+        std::vector<AstPtr> statms;
         int rpos;
         public:
         BlockStatement(int &_lpos, int &_rpos, std::vector<AstPtr> &_state)
-            :lpos(_lpos), rpos(_rpos), statm(_state) {}
+            :lpos(_lpos), rpos(_rpos), statms(_state) {}
 
-        int lParen() const;
-        std::vector<AstPtr> statement() const;
-        int rParen() const;
+        int lParen() const { return lpos; }
+        std::vector<AstPtr> statement() const { return statms; }
+        int rParen() const { return rpos; }
         void accept() const;
     };
     
     
     class EnumLitral: public Ast {
         private:
-        tokt tok;
+        uint tok;
         AstPtr var;
         std::vector<std::pair<AstPtr,AstPtr>>u_data;
         public:
         EnumLitral( AstPtr &_var,  std::vector<std::pair<AstPtr,
-                    AstPtr>>&_u_data, tokt &_tok)
-            :var(_var), u_data(_u_data), tok(_tok) {}
+                    AstPtr>>&_u_data, uint &_tok)
+            :var(_var), u_data(_u_data), tok(_tok) 
+            {}
 
         std::vector<std::pair<AstPtr,AstPtr>> value() const;
         AstPtr varname() const;
-        tokt token() const;
+        tokt token() const { return token_list[tok]; }
         void accept() const;
     };
 
+
     class IntType: public Ast {
         private:
-        tokt tok;
+        uint tok;
         public:
-        IntType(tokt &_tok)
-        : tok(_tok) {}
-        tokt token() const;
+        IntType(uint &_tok)
+        : tok(_tok) 
+        {}
+       
+        tokt token() const { return token_list[tok]; }
         void accept() const;
     };
 
     class StringType: public Ast {
         private:
-        tokt tok;
+        uint tok;
         public:
-        StringType(tokt &_tok)
-        : tok(_tok) {}
-        tokt token() const;
+        StringType(uint &_tok)
+        : tok(_tok) 
+        {}
+        
+        tokt token() const { return token_list[tok]; }
         void accept() const;
     };
 
     
     class FloatType: public Ast {
         private:
-        tokt tok;
+        uint tok;
         public:
-        FloatType(tokt &_tok)
-        : tok(_tok) {}
-        tokt token() const;
+        FloatType(uint &_tok)
+        : tok(_tok) 
+        {}
+        
+        tokt token() const { return token_list[tok]; }
         void accept() const;
     };
 
     class BoolType: public Ast {
         private:
-        tokt tok;
+        uint tok;
         public:
-        BoolType(tokt &_tok)
+        BoolType(uint &_tok)
         : tok(_tok) {}
-        tokt token() const;
+        
+        tokt token() const { return token_list[tok]; }
         void accept() const;
     };
+
 
     class TypeState: public Ast {
         private:
-        tokt tok;
+        uint tok;
         AstPtr dest;
         AstPtr src;
         public:
-        TypeState(tokt &_tok, AstPtr &_dest, AstPtr &_src)
+        TypeState(uint &_tok, AstPtr &_dest, AstPtr &_src)
         : tok(_tok), dest(_dest), src(_src) {}
 
-        tokt token() const;
-        AstPtr destination() const;
-        AstPtr source() const;
+        tokt token() const { return token_list[tok]; }
+        AstPtr destination() const { return dest; }
+        AstPtr source() const { return src; }
         void accept() const;
     };
+
 
     class ConstExpr: public Ast {
         private:
-        tokt tok;
-        AstPtr varname;
+        uint tok;
+        AstPtr name;
         AstPtr type;
         AstPtr val;
         public:
-        ConstExpr(tokt &_tok, AstPtr &_var, AstPtr &_type, AstPtr &_val)
-        : tok(_tok), varname(_var), type(_type), val(_val) {}
+        ConstExpr(uint &_tok, AstPtr &_var, AstPtr &_type, AstPtr &_val)
+        : tok(_tok), name(_var), type(_type), val(_val) {}
 
-        tokt token() const;
-        AstPtr vname() const;
-        AstPtr vartype() const;
-        AstPtr value() const;
+        tokt token() const { return token_list[tok]; }
+        AstPtr vname() const { return name; }
+        AstPtr vartype() const { return type; }
+        AstPtr value() const { return val; }
         void accept() const;
     };
+
+
+    class IndexExpr: public Ast {
+        private:
+        uint tok;
+        AstPtr expr;
+        int lpos;
+        AstPtr index;
+        int rpos;
+        
+        public:
+        IndexExpr(uint &_tok, AstPtr &_expr, int &_lpos, AstPtr &_index, int &_rpos)
+        : tok(_tok), expr(_expr),  index(_index), lpos(_lpos)
+        {}
+
+        tokt token() const { return token_list[tok]; }
+        AstPtr expression() const { return expr; }
+        int l_position() const { return lpos; }
+        AstPtr index() const { return expr; }
+        int r_position() const { return rpos; }
+        void accept() const;
+
+    };
+
 
     class ArrayType: public Ast {
         private:
-        tokt tok;
+        uint tok;
         AstPtr size;
         AstPtr type;
         public:
-        ArrayType(tokt &_tok, AstPtr &_size, AstPtr &_type)
+        ArrayType(uint &_tok, AstPtr &_size, AstPtr &_type)
         : tok(_tok), size(_size), type(type) {}
 
-        tokt token() const;
-        AstPtr arraysize() const;
-        AstPtr arraytype() const;
+        tokt token() const { return token_list[tok]; }
+        AstPtr arraysize() const { return size; }
+        AstPtr arraytype() const { return type; }
         void accept() const;
     };
+
 
     class ComposeExpr: public Ast{
         private:
-        tokt tok;
+        uint tok;
         AstPtr expr;
-        AstPtr field;
+        AstPtr body;
         public:
-        ComposeExpr(tokt &_tok, AstPtr &_expr, AstPtr &_field) 
-        : tok(_tok), expr(_expr), field(_field) {}
+        ComposeExpr(uint &_tok, AstPtr &_expr, AstPtr &_field) 
+        : tok(_tok), expr(_expr), body(_field) {}
 
-        tokt token() const;
-        AstPtr exr() const;
-        AstPtr field() const;
+        tokt token() const { return token_list[tok]; }
+        AstPtr exr() const { return expr; }
+        AstPtr field() const { return body; }
         void accept() const;
     };
 
 
-    class BineryOp: public Ast {
+    class BineryExper: public Ast {
         private:
-        tokt tok;
+        uint tok;
         AstPtr left;
-        tokt op;
+        Token_type op;
         AstPtr right;
         public:
-        BineryOp(tokt &_tok, AstPtr &_left, tokt &_op, AstPtr &_right)
+        BineryExper(uint &_tok, AstPtr &_left, Token_type &_op, AstPtr &_right)
         :tok(_tok), left(_left), op(_op), right(_right) {}
 
-        tokt token() const;
-        AstPtr rightOpr() const;
-        tokt oprator() const;
-        AstPtr leftOpr() const;
+        tokt token() const { return token_list[tok]; }
+        AstPtr rightOpr() const { return right; }
+        Token_type oprator() const { return op; }
+        AstPtr leftOpr() const { return left; }
         void accept() const;
     };
 
-    // class ImportState: public {
-    //     private:
-
-    //     public:
-    // };
-
-    class UnaryOp: public Ast {
+    class ImportState: public Ast{
         private:
-        tokt tok;
-        AstPtr var;
-        public:
-        UnaryOp(tokt &_tok, AstPtr &_var)
-        : tok(_tok), var(_var) {}
 
-        tokt token() const;
-        AstPtr variable() const;
+
+        public:
+
+    };
+
+    
+
+    class UnaryExper: public Ast {
+        private:
+        uint tok;
+        AstPtr var;
+        Token_type op;
+        
+        public:
+        UnaryExper(uint &_tok, AstPtr &_var, Token_type &_op)
+        : tok(_tok), var(_var), op(_op)
+        {}
+
+        Token_type op() const { return op; };
+        tokt token() const { return token_list[tok]; }
+        AstPtr variable() const { return var; }
         void accept() const;
     };
 
@@ -294,18 +336,19 @@ namespace ast{
         AstPtr h2;
         AstPtr h3;
         AstPtr loopbody;
-        tokt tok;
+        uint tok;
+       
         public:
         ForLoopState(AstPtr &_h1, AstPtr &_h2,
-                     AstPtr &_h3, AstPtr &_loopbody, tokt &_tok)
+                     AstPtr &_h3, AstPtr &_loopbody, uint &_tok)
             :h1(_h1),  h2(_h2), h3(_h3),
                          loopbody(_loopbody), tok(_tok) {}
 
-        AstPtr variable() const;
-        AstPtr loopCondition() const;
-        AstPtr loopExpression() const;
-        AstPtr loopBody() const;
-        tokt token() const;
+        AstPtr variable() const { return h1; }
+        AstPtr loopCondition() const { return h2; }
+        AstPtr loopExpression() const { return h3; }
+        AstPtr loopBody() const { return loopbody; }
+        tokt token() const {return token_list[tok]; }
         void accept() const;
 
     };
@@ -313,71 +356,62 @@ namespace ast{
 
     class IfStatement: public Ast{
         private:
-        AstPtr condition;
+        AstPtr cond;
         AstPtr ifbody;
-        AstPtr elsebody;
-        tokt tok;
-        public:
-        IfStatement(AstPtr &_condition , AstPtr &_ifbody,
-                             AstPtr &_elsebody, tokt &_tok)
-        : condition(_condition), ifbody(_ifbody), 
-                        elsebody(_elsebody), tok(_tok) {}
+        AstPtr elbody;
+        uint tok;
         
-        AstPtr condition() const;
-        AstPtr ifbody() const;
-        AstPtr elsebody() const;
-        tokt token() const;
-        void accept() const;
-    };
-
-     class PointerExpr: public Ast {
-        private:
-        tokt tok;
-        AstPtr typePtr;
         public:
-        PointerExpr(tokt &tok, AstPtr &_type)
-        : tok(tok), typePtr(_type) {}
-
-        tokt token() const;
-        AstPtr type() const;
+        IfStatement(AstPtr &_cond , AstPtr &_ifbody,
+                             AstPtr &_elbody, uint &_tok)
+        : cond(_cond), ifbody(_ifbody), 
+                        elbody(_elbody), tok(_tok) {}
+        
+        AstPtr condition() const { return cond; }
+        AstPtr ifbody() const { return ifbody; }
+        AstPtr elsebody() const { return  elbody; }
+        tokt token() const { return token_list[tok]; }
         void accept() const;
     };
 
-    class RefExpr: public Ast {
+
+     class PointerType: public Ast {
         private:
-        tokt tok;
-        AstPtr refType;
+        uint tok;
+        Token_type op;
+        AstPtr base;
+       
         public:
-        RefExpr(tokt &_tok, AstPtr &ref)
-        : tok(_tok), refType(ref) {}
+        PointerType(uint &tok,Token_type &_op, AstPtr &_type)
+        : tok(tok), op(_op), base(_type) {}
 
-        tokt token() const;
-        AstPtr reftype() const;
+        tokt token() const { return token_list[tok]; }
+        AstPtr type() const { return base; }
         void accept() const;
     };
-
 
 
     class BranchState: public Ast {
         private:
-        tokt tok;
+        uint tok;
         public:
-        BranchState(tokt &_tok)
+        BranchState(uint &_tok)
         : tok(_tok) {}
 
-        tokt token() const;
+        tokt token() const { return token_list[tok]; }
         void accept() const;
     };
 
 
      class MemberExpr: public Ast {
         private:
-        tokt tok;
+        uint tok;
         AstPtr right;
         Token_type mem_op;
         AstPtr left;
+        
         public:
-        MemberExpr(tokt &_tok, AstPtr &_left, Token_type &_mem_op, AstPtr &_right) 
+        MemberExpr(uint &_tok, AstPtr &_left, Token_type &_mem_op, AstPtr &_right) 
         : tok(_tok), mem_op(_mem_op), left(_left) ,right(_right) {}
 
         tokt token() const;
@@ -387,26 +421,31 @@ namespace ast{
         void accept() const;
     };
 
+
+
     class StructState: public Ast {
         private:
-        tokt tok;
-        AstPtr elemt;
+        uint tok;
+        std::vector<AstPtr> elemt;
+        
         public:
-        StructState(tokt &_tok, AstPtr &_mem)
+        StructState(uint &_tok, std::vector<AstPtr> &_mem)
         : tok(_tok), elemt(_mem) {}
 
-        tokt token() const;
-        AstPtr element() const;
+        tokt token() const { return token_list[tok]; }
+        std::vector<AstPtr> element() const { return elemt; }
         void accept() const;
     };
 
-    class FeildList:public Ast {
+
+    class ExpressionList:public Ast {
         private:
         int lpos;
         std::vector<AstPtr>list;
         int rpos;
+       
         public:
-        FeildList(int &_lpos, std::vector<AstPtr> &_list, int &_rpos)
+        ExpressionList(int &_lpos, std::vector<AstPtr> &_list, int &_rpos)
         :lpos(_lpos), list(_list), rpos(_rpos) {}
 
         int lposition() const;
@@ -415,33 +454,73 @@ namespace ast{
         void accept() const;
     };
 
+
+
     class AssignmentState: public Ast {
         private:
-        tokt tok;
+        uint tok;
         AstPtr left;
-        tokt op;
+        Token_type op;
         AstPtr right;
+        
         public:
-        AssignmentState(tokt &_tok, AstPtr &_left, tokt &_assop, AstPtr &_right)
+        AssignmentState(uint &_tok, AstPtr &_left, Token_type &_assop, AstPtr &_right)
         : tok(_tok), left(_left), op(_assop), right(_right) {}
+       
         tokt token() const;
         AstPtr leftVar() const;
-        tokt opreator() const;
+        Token_type opreator() const;
         AstPtr rightVal() const;
         void accept() const;
     };
 
+
+
+    class NewState:public Ast{
+    private:
+        uint tok;
+        AstPtr type;
+
+
+    public:
+        NewState(uint &_tok, AstPtr &_type)
+        :tok(_tok), type(_type) {}
+        tokt token() const { return token_list[tok]; }
+        AstPtr typePtr() const{ return type; }
+        void accept() const;
+
+    };
+
+
+    class FreeState:public Ast{
+
+    private:
+        uint tok;
+        int lpos;
+        AstPtr ptr;
+        int rpos;
+
+    public:
+        FreeState(uint &_tok, AstPtr &_ptr)
+        :tok(_tok), ptr(_ptr) {}
+        tokt token() const { return token_list[tok]; }
+        AstPtr typePtr() const{ return ptr; }
+        void accept() const;
+
+    };
+
+
     class VariableState: public Ast {
         private:
-        tokt tok;
-        AstPtr name;
+        uint tok;
+        std::vector<AstPtr> name;
         AstPtr type;
         public:
-        VariableState(tokt &_tok, AstPtr &_var, AstPtr &_type)
+        VariableState(uint &_tok, std::vector<AstPtr> &_var, AstPtr &_type)
         : tok(_tok), name(_var), type(_type) {}
 
         tokt token() const;
-        AstPtr varname() const;
+        std::vector<AstPtr> varname() const;
         AstPtr vartype() const;
         void accept() const;
     };
@@ -449,65 +528,70 @@ namespace ast{
 
     class Param: public Ast{
         private:
-        tokt tok;
+        int tok;
         AstPtr iden;
         AstPtr type;
         public:
-        Param(tokt &_tok, AstPtr &_iden, AstPtr &_type)
+        Param(int &_tok, AstPtr &_iden, AstPtr &_type)
         : tok(_tok), iden(_iden), type(_type) {}
         
-        tokt token() const;
+        tokt token() const { return token_list[tok]; }
         AstPtr Piden() const;
         AstPtr Ptype() const;
         void accept() const;
     };
 
+
     class FunctionDef: public Ast {
         private:
-        tokt tok;
+        uint tok;
         AstPtr name;
-        AstPtr parameter;
-        AstPtr returntype;
+        std::vector<AstPtr> param;
+        AstPtr retype;
         AstPtr funcbody;
-        public:
-        FunctionDef(tokt &_tok, AstPtr &_name, AstPtr &_parameter,
-                                AstPtr  _retype, AstPtr &_uncbody)
-         : tok(_tok), name(_name), parameter(_parameter),
-                         returntype(_retype), funcbody(funcbody) {}
 
-        tokt token() const;
-        AstPtr funcname() const;
-        AstPtr paramVal() const;
-        AstPtr retType() const;
-        AstPtr functionBody() const;
+        public:
+        FunctionDef(uint &_tok, AstPtr &_name, std::vector<AstPtr> &_parameter,
+                                AstPtr  _retype, AstPtr &_uncbody)
+         : tok(_tok), name(_name), param(_parameter),
+                         retype(_retype), funcbody(funcbody) {}
+
+        tokt token() const { return token_list[tok]; }
+        AstPtr func_name() const { return name; }
+        std::vector<AstPtr> parameter() const { return param; }
+        AstPtr ret_type() const { return retype; }
+        AstPtr func_Body() const { return funcbody; }
         void accept() const;
     };
 
     class ReturnState: public Ast {
         private:
-        tokt tok;
+        uint tok;
         AstPtr val;
+
         public:
-        ReturnState(tokt &_tok, AstPtr &_val)
+        ReturnState(uint &_tok, AstPtr &_val)
         : tok(_tok), val(_val) {}
 
-        tokt token();
-        AstPtr value();
+        tokt token() { token_list[tok]; }
+        AstPtr value() { return val; }
         void accept() const;
     };
 
     class FunctionCall: public Ast {
         private:
-        tokt tok;
+        uint tok;
         AstPtr name;
-        AstPtr args;
+        std::vector<AstPtr> args;
+
         public:
-        FunctionCall(tokt &_tok, AstPtr &_name, AstPtr &_args)
+        FunctionCall(uint &_tok, AstPtr &_name, std::vector<AstPtr> &_args)
         : tok(_tok), name(_name), args(_args) {}
 
-        tokt token() const;
-        AstPtr funcname() const;
-        AstPtr arg() const;
+
+        tokt token() const { token_list[tok]; }
+        AstPtr funcname() const { return name; }
+        std::vector<AstPtr> arg() const { return args; }
         void accept() const;
     };
 

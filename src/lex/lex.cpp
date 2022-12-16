@@ -9,8 +9,11 @@ namespace lex
         "STR",
         "CHAR",
         "FLOAT",
+        "null",
         "IDEN",
 
+        "new",
+        "free",
         "import",
         "type",
         "const",
@@ -18,15 +21,12 @@ namespace lex
         "for",
         "in",
         "var",
-        "while",
         "return",
         "continue",
         "break",
-        "nil",
         "true",
         "false",
         "if",
-        "elif",
         "else",
         "struct",
         "enum",
@@ -55,10 +55,8 @@ namespace lex
         "/=",
         "%=",
 
-        "x++",
-        "x--",
-        "++x",
-        "--x",
+        "++",
+        "--",
 
         "&&",
         "||",
@@ -208,10 +206,10 @@ namespace lex
     Token_type get_keyword(std::string &src) {
         if(src == token[FOR])return FOR;
         if(src == token[IF])return IF;
-        if(src == token[ELIF])return ELIF;
+        if(src == token[NEW])return NEW;
+        if(src == token[FREE])return FREE;
         if(src == token[ELSE])return ELSE;
         if(src == token[FN])return FN;
-        if(src == token[WHILE])return WHILE;
         if(src == token[STRUCT])return STRUCT;
         if(src == token[NIL])return NIL;
         if(src == token[CONTINUE])return CONTINUE;
@@ -223,7 +221,6 @@ namespace lex
         if(src == token[CONST])return CONST;
         if(src == token[VAR])return VAR;
         if(src == token[ENUM])return ENUM;
-        if(src == token[STRUCT])return STRUCT;
         if(src == token[IMPORT])return IMPORT;
         if(src == token[STRING])return STRING;
         if(src == token[BOOL])return BOOL;
@@ -239,6 +236,40 @@ namespace lex
         if(src == token[IN])return IN;
         if(src == token[F64])return F64;
 
+        // switch(src){
+        //     case token[FOR]:  return FOR;
+        //     case token[IF]:  return IF;
+        //     case token[NEW]:  return NEW;
+        //     case token[FREE]:  return FREE;
+        //     case token[ELSE]:  return ELSE;
+        //     case token[FN]:  return FN;
+        //     case token[STRUCT]:  return STRUCT;
+        //     case token[NIL]:  return NIL;
+        //     case token[CONTINUE]:  return CONTINUE;
+        //     case token[BREAK]:  return BREAK;
+        //     case token[TRUE]:  return TRUE;
+        //     case token[FALSE]:  return FALSE;
+        //     case token[TYPE]:  return TYPE;
+        //     case token[RETURN]:  return RETURN;
+        //     case token[CONST]:  return CONST;
+        //     case token[VAR]:  return VAR;
+        //     case token[ENUM]:  return ENUM;
+        //     case token[IMPORT]:  return IMPORT;
+        //     case token[STRING]:  return STRING;
+        //     case token[BOOL]:  return BOOL;
+        //     case token[I8]:  return I8;
+        //     case token[I16]:  return I16;
+        //     case token[I32]:  return I32;
+        //     case token[I64]:  return I64;
+        //     case token[UI8]:  return UI8;
+        //     case token[UI16]:  return UI16;
+        //     case token[UI32]:  return UI32;
+        //     case token[UI64]:  return UI64;
+        //     case token[F32]:  return F32;
+        //     case token[IN]:  return IN;
+        //     case token[F64]:  return F64;
+        //     default: break;
+        // }
         return IDEN;
     }
 
@@ -395,7 +426,7 @@ namespace lex
                 if(i < str_len - 1){
                     if(NXT == '+'){
                         ++i;
-                       SET(V_INC);
+                       SET(INC);
                     }else if(NXT == '='){
                         ++i;
                         SET(AND_ASSN);
@@ -408,7 +439,7 @@ namespace lex
                 if(i < str_len - 1){
                     if(NXT == '-'){
                         ++i;
-                       SET(V_DEC);
+                       SET(DEC);
                     }else if(NXT == '='){
                         ++i;
                        SET(ASSN_SUB);
@@ -500,10 +531,10 @@ namespace lex
                 if(i < str_len - 1){
                     if(NXT == '='){
                         ++i;
-                        SET(COMP_ASSN);
+                        SET(NOT_ASSN);
                     }
                 }
-                SET(COMP_OP);
+                SET(NOT_OP);
             }
             case '<':
             {

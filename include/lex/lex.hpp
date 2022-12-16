@@ -13,8 +13,11 @@ namespace lex
         STR,
         CHAR,
         FLOAT,
+        NIL,
         IDEN,
 
+        NEW,
+        FREE,
         IMPORT,
         TYPE,
         CONST,
@@ -22,15 +25,12 @@ namespace lex
         FOR,
         IN,
         VAR,
-        WHILE,
         RETURN,
         CONTINUE,
         BREAK,
-        NIL,
         TRUE,
         FALSE,
         IF,
-        ELIF,
         ELSE,
         STRUCT,
         ENUM,
@@ -59,10 +59,8 @@ namespace lex
         ASSN_DIV,
         ASSN_MOD,
 
-        V_INC,
-        V_DEC,
-        INC_V,
-        DEC_V,
+        INC,
+        DEC,
 
         AND,
         OR,
@@ -78,11 +76,11 @@ namespace lex
         AND_OP,
         OR_OP,
         XOR_OP,
-        COMP_OP,
+        NOT_OP,
         AND_ASSN,
         OR_ASSN,
         XOR_ASSN,
-        COMP_ASSN,
+        NOT_ASSN,
 
         LSHIFT,
         RSHIFT,
@@ -123,7 +121,15 @@ namespace lex
     typedef std::vector<tokt> tok_t;
 
     bool tokenizer(const std::string &src, tok_t &toks, int begin, int end);
+    
+     __attribute__((flatten)) inline bool is_unary_op(Token_type tok) {
+        return tok == INC||tok == DEC||tok == ADD|| tok == SUB||
+         tok == MUL|| tok == AND_OP||tok == NOT_OP|| tok == NOT;
+    }
 
+     __attribute__((flatten)) inline bool is_litral_val(Token_type tok) {
+        return tok == INT||tok == STR||tok == CHAR|| tok == FLOAT||tok == TRUE||tok == FALSE;
+    }
 }
 
 #endif
