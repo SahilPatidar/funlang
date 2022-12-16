@@ -212,14 +212,14 @@ namespace ast{
     };
 
 
-    class ConstExpr: public Ast {
+    class ConstState: public Ast {
         private:
         uint tok;
         AstPtr name;
         AstPtr type;
         AstPtr val;
         public:
-        ConstExpr(uint &_tok, AstPtr &_var, AstPtr &_type, AstPtr &_val)
+        ConstState(uint &_tok, AstPtr &_var, AstPtr &_type, AstPtr &_val)
         : tok(_tok), name(_var), type(_type), val(_val) {}
 
         tokt token() const { return token_list[tok]; }
@@ -269,13 +269,13 @@ namespace ast{
     };
 
 
-    class ComposeExpr: public Ast{
+    class StructExpr: public Ast{
         private:
         uint tok;
         AstPtr expr;
         AstPtr body;
         public:
-        ComposeExpr(uint &_tok, AstPtr &_expr, AstPtr &_field) 
+        StructExpr(uint &_tok, AstPtr &_expr, AstPtr &_field) 
         : tok(_tok), expr(_expr), body(_field) {}
 
         tokt token() const { return token_list[tok]; }
@@ -438,19 +438,21 @@ namespace ast{
     };
 
 
-    class ExpressionList:public Ast {
+    class ArrayExpr: public Ast {
         private:
-        int lpos;
+        uint tok;
+        AstPtr len;
+        AstPtr type;
         std::vector<AstPtr>list;
-        int rpos;
        
         public:
-        ExpressionList(int &_lpos, std::vector<AstPtr> &_list, int &_rpos)
-        :lpos(_lpos), list(_list), rpos(_rpos) {}
+        ArrayExpr(uint &_tok, AstPtr &_len, AstPtr &_type, std::vector<AstPtr> &_list)
+        :tok(_tok), len(_len), type(_type), list(_list) {}
 
-        int lposition() const;
-        std::vector<AstPtr> listof() const;
-        int rposition() const;
+        tokt token() const { return token_list[tok]; }
+        AstPtr length() const { return len; }
+        AstPtr type_of() const { return type; }
+        std::vector<AstPtr> listof() const { return list; }
         void accept() const;
     };
 

@@ -8,8 +8,7 @@ type c struct {
 };
 
 fn main() i32 {
-   var i[] i32;
-   var c ,ca, cd i8;
+   var i [6]i32;
    d = "d";
    var s = "hello";
    return;

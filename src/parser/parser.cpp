@@ -65,7 +65,57 @@ namespace parser {
         }
     }
 
-    
+
+    AstPtr Parser::parseArrayExpr() {
+        uint tok = cur_index;
+        AstPtr len;
+        std::vector<AstPtr>vals;
+        if(cur_token == LBRACK){
+            next();
+            if(cur_token != RBRACK){
+
+            }else{
+                //err
+            }
+        }else{
+            //err
+        }
+
+        if(cur_token != RBRACK){
+            //err
+        }
+
+        AstPtr type = parseType();
+
+        if(cur_token == LBRACE){
+            next();
+            if(cur_token != RBRACE) {
+                
+                do {    
+                    
+                    AstPtr ele;
+                    ele = parseExpression();
+                    vals.push_back(ele);
+
+                }while(cur_token == COMMA);
+
+            }
+
+        } else {
+            //err
+        }
+
+        if(cur_token != RBRACE){
+            //err
+        }
+
+        next();
+
+        expectToken(SCOL);
+
+        return std::make_shared<ArrayExpr>(tok,len,type,vals);
+    }
+
 
     AstPtr Parser::parseArrayType() {
         AstPtr len, type;
@@ -82,21 +132,7 @@ namespace parser {
         return std::make_shared<ArrayType>(tok, len, type);
     }
 
-    AstPtr Parser::parseStruct() {
-        uint tok = cur_index;
-        AstPtr element;
-        expectToken(STRUCT);
-        if(cur_token != LBRACE) {
-            //err
-        }
-
-        if(cur_token != RBRACE){
-            element = parseParamOrMember();
-        }
-        expectToken(RBRACE);
-        expectToken(SCOL);
-        return std::make_shared<StructState>(tok, element);
-    }
+    
 
     AstPtr Parser::parseIdentifier() {
         return std::make_shared<Identifier>(toks[cur_index].data,cur_index);
@@ -352,25 +388,32 @@ namespace parser {
 
 
 
-
-    AstPtr Parser::parseParamOrMember() {
-        int lpos, rpos;
-        std::vector<AstPtr>list_of;
-
-        lpos = cur_index;
-
-        do {
-            AstPtr member;
-            
-            member =  parseTypeValuePair();
-            
-            list_of.push_back(member);
-
-        }while(cur_token == COMMA);
+    AstPtr Parser::parseStruct() {
+        uint tok = cur_index;
+        std::vector<AstPtr> element;
         
-        rpos = cur_index;
+        expectToken(STRUCT);
 
-        return std::make_shared<ExpressionList>(lpos,list_of,rpos);
+        if(cur_token == LBRACE) {
+            if(cur_token != RBRACE){
+
+                do {
+                    AstPtr member;
+                    
+                    member =  parseTypeValuePair();
+                    
+                    element.push_back(member);
+
+                }while(cur_token == COMMA);
+            }
+        }else {
+            //err
+        }
+
+        
+        expectToken(RBRACE);
+        expectToken(SCOL);
+        return std::make_shared<StructState>(tok, element);
     }
 
 
@@ -416,6 +459,30 @@ namespace parser {
         return std::make_shared<FunctionDef>(pos, funtype, parameter, retype, body);
     }
 
+    AstPtr Parser::parseConst() {
+        uint tok;
+        
+        expectToken(CONST);
+
+        if(cur_token != IDEN){
+            //err
+        }
+
+        AstPtr name = parseIdentifier();
+        AstPtr type = parseType();
+        AstPtr val;
+        if(cur_token == ASSN){
+            next();
+            val = parseExpression();
+        }else {
+            //err;
+        }
+
+        expectToken(SCOL);
+
+        return std::make_shared<ConstState>(tok,name,type,val);
+
+    }
 
     AstPtr Parser::parseReturn() {
         int pos = cur_index;
@@ -472,6 +539,7 @@ namespace parser {
         uint tok = cur_index;
         std::vector<AstPtr> var;
         AstPtr type;
+
         expectToken(VAR);
         
         do {
@@ -484,6 +552,7 @@ namespace parser {
         }while(cur_token == COMMA);
         
         type = parseType();
+        
         return std::make_shared<VariableState>(tok, var, type);
     }
 
