@@ -269,29 +269,15 @@ namespace ast{
     };
 
 
-    class StructExpr: public Ast{
-        private:
-        uint tok;
-        AstPtr expr;
-        AstPtr body;
-        public:
-        StructExpr(uint &_tok, AstPtr &_expr, AstPtr &_field) 
-        : tok(_tok), expr(_expr), body(_field) {}
-
-        tokt token() const { return token_list[tok]; }
-        AstPtr exr() const { return expr; }
-        AstPtr field() const { return body; }
-        void accept() const;
-    };
-
 
     class BineryExper: public Ast {
-        private:
+    private:
         uint tok;
         AstPtr left;
         Token_type op;
         AstPtr right;
-        public:
+
+    public:
         BineryExper(uint &_tok, AstPtr &_left, Token_type &_op, AstPtr &_right)
         :tok(_tok), left(_left), op(_op), right(_right) {}
 
@@ -301,6 +287,7 @@ namespace ast{
         AstPtr leftOpr() const { return left; }
         void accept() const;
     };
+
 
     class ImportState: public Ast{
         private:
@@ -312,14 +299,32 @@ namespace ast{
 
     
 
-    class UnaryExper: public Ast {
+    class PrefixExper: public Ast {
         private:
         uint tok;
         AstPtr var;
         Token_type op;
         
         public:
-        UnaryExper(uint &_tok, AstPtr &_var, Token_type &_op)
+        PrefixExper(uint &_tok, AstPtr &_var, Token_type &_op)
+        : tok(_tok), var(_var), op(_op)
+        {}
+
+        Token_type op() const { return op; };
+        tokt token() const { return token_list[tok]; }
+        AstPtr variable() const { return var; }
+        void accept() const;
+    };
+
+
+    class PostfixExper: public Ast {
+        private:
+        uint tok;
+        AstPtr var;
+        Token_type op;
+        
+        public:
+        PostfixExper(uint &_tok, AstPtr &_var, Token_type &_op)
         : tok(_tok), var(_var), op(_op)
         {}
 
@@ -438,20 +443,17 @@ namespace ast{
     };
 
 
-    class ArrayExpr: public Ast {
+    class ListExpr: public Ast {
         private:
         uint tok;
-        AstPtr len;
-        AstPtr type;
+        int lpos;
         std::vector<AstPtr>list;
-       
+        int rpos;
         public:
-        ArrayExpr(uint &_tok, AstPtr &_len, AstPtr &_type, std::vector<AstPtr> &_list)
-        :tok(_tok), len(_len), type(_type), list(_list) {}
+        ListExpr(uint &_tok, int &_lpos, std::vector<AstPtr> &_list, int &_rpos)
+        :tok(_tok), list(_list) {}
 
         tokt token() const { return token_list[tok]; }
-        AstPtr length() const { return len; }
-        AstPtr type_of() const { return type; }
         std::vector<AstPtr> listof() const { return list; }
         void accept() const;
     };
@@ -566,6 +568,7 @@ namespace ast{
         void accept() const;
     };
 
+
     class ReturnState: public Ast {
         private:
         uint tok;
@@ -579,6 +582,7 @@ namespace ast{
         AstPtr value() { return val; }
         void accept() const;
     };
+
 
     class FunctionCall: public Ast {
         private:

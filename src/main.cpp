@@ -4,7 +4,10 @@
 #include<string.h>
 #include<sstream>
 #include<filesystem>
+#include"../include/parser/parser.hpp"
+#include"../include/parser/Ast.hpp"
 #include"../include/lex/lex.hpp"
+#include"../include/Error.hpp"
 
 void compile(){
    std::ifstream file("call.fn");
@@ -19,10 +22,11 @@ void compile(){
    if(!c){
     printf("invalid src string..\n");
    }
-    std::cout<<str_len<<std::endl;
-    for(int i = 0; i < str_len; i++){
-        std::cout<<toks[i].data<<"    "<<toks[i].pos<<"    "<<toks[i].tok_type<<std::endl;
-    }
+    // std::cout<<str_len<<std::endl;
+    // for(int i = 0; i < str_len; i++){
+    //     std::cout<<toks[i].data<<"    "<<toks[i].pos<<"    "<<toks[i].tok_type<<std::endl;
+    // }
+    
 
 }
 

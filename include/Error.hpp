@@ -1,16 +1,12 @@
 #ifndef ERROR_H
 #define ERROR_H
-//#include<string>
+#include"lex/lex.hpp"
 
-enum Errors {
-    ERR_OK,
-    ERR_LEX,
-    ERR_IO,
-    ERR_PARSE,
-    ERR_CODEGEN,
-    ERR_EXEC,
-    ERR_FAIL
-};
+namespace err{
+    void out(std::string msg, lex::tokt tok){
+        std::cerr<<"error:"<<tok.line<<" : "<<tok.pos<<msg<<" token type { "<<tok.tok_type<<" }"<<" "<<std::endl;
+    }
+}
 
 
 #endif

@@ -236,40 +236,6 @@ namespace lex
         if(src == token[IN])return IN;
         if(src == token[F64])return F64;
 
-        // switch(src){
-        //     case token[FOR]:  return FOR;
-        //     case token[IF]:  return IF;
-        //     case token[NEW]:  return NEW;
-        //     case token[FREE]:  return FREE;
-        //     case token[ELSE]:  return ELSE;
-        //     case token[FN]:  return FN;
-        //     case token[STRUCT]:  return STRUCT;
-        //     case token[NIL]:  return NIL;
-        //     case token[CONTINUE]:  return CONTINUE;
-        //     case token[BREAK]:  return BREAK;
-        //     case token[TRUE]:  return TRUE;
-        //     case token[FALSE]:  return FALSE;
-        //     case token[TYPE]:  return TYPE;
-        //     case token[RETURN]:  return RETURN;
-        //     case token[CONST]:  return CONST;
-        //     case token[VAR]:  return VAR;
-        //     case token[ENUM]:  return ENUM;
-        //     case token[IMPORT]:  return IMPORT;
-        //     case token[STRING]:  return STRING;
-        //     case token[BOOL]:  return BOOL;
-        //     case token[I8]:  return I8;
-        //     case token[I16]:  return I16;
-        //     case token[I32]:  return I32;
-        //     case token[I64]:  return I64;
-        //     case token[UI8]:  return UI8;
-        //     case token[UI16]:  return UI16;
-        //     case token[UI32]:  return UI32;
-        //     case token[UI64]:  return UI64;
-        //     case token[F32]:  return F32;
-        //     case token[IN]:  return IN;
-        //     case token[F64]:  return F64;
-        //     default: break;
-        // }
         return IDEN;
     }
 

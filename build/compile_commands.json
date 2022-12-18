@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/Users/sahilpatidar/Desktop/funlang/build",
+  "command": "/usr/bin/clang++  -I/Users/sahilpatidar/Desktop/funlang/include -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk -o CMakeFiles/fun.dir/src/main.cpp.o -c /Users/sahilpatidar/Desktop/funlang/src/main.cpp",
+  "file": "/Users/sahilpatidar/Desktop/funlang/src/main.cpp"
+},
+{
+  "directory": "/Users/sahilpatidar/Desktop/funlang/build",
+  "command": "/usr/bin/clang++  -I/Users/sahilpatidar/Desktop/funlang/include -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk -o CMakeFiles/fun.dir/src/lex/lex.cpp.o -c /Users/sahilpatidar/Desktop/funlang/src/lex/lex.cpp",
+  "file": "/Users/sahilpatidar/Desktop/funlang/src/lex/lex.cpp"
+}
+]

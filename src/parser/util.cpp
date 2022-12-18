@@ -17,7 +17,7 @@ namespace parser {
         if(toks[cur_index].tok_type == tok){
             next();
         }else {
-            expectErr(cur_index);
+            err::out("expected Token ",toks[cur_index]);
             next();
         }
     }

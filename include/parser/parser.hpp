@@ -3,6 +3,7 @@
 
 #include"Ast.hpp"
 #include<map>
+#include"include/Error.hpp"
 
 using namespace ast;
 namespace parser{
@@ -23,7 +24,7 @@ namespace parser{
         __attribute__((flatten)) inline bool match2(Token_type t1, Token_type t2);
         __attribute__((flatten)) inline bool match3(Token_type t1, Token_type t2, Token_type t3);
         AstPtr parseBlockStatement();
-        AstPtr parsePointerExpr();
+        AstPtr parsePointerType();
         AstPtr parseIdentifier();
         AstPtr parseLitral();
         AstPtr parseType();
@@ -35,12 +36,13 @@ namespace parser{
         AstPtr parseEnum();
         AstPtr parseDotOrArrow(AstPtr left);
         AstPtr parseAssignment(AstPtr left);
-        AstPtr parseExpression();
-        AstPtr parseRUnaryExpr(AstPtr left);
-        AstPtr parseLUnaryExpr();
+        AstPtr parseSecondryExpr(AstPtr expr);
+        AstPtr parsePrimaryExpr();
+        AstPtr parsePostfixExpr(AstPtr left);
+        AstPtr parsePrefixExpr();
         AstPtr parseBineryExpr(AstPtr left, int prev_prece);
         AstPtr parseStruct();
-       // AstPtr parseStructExpr();
+        AstPtr parseStructExpr();
         AstPtr parseReturn();
         AstPtr parseTypeCast();
         AstPtr parseIfStatm();

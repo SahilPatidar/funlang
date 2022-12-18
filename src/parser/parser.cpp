@@ -1,5 +1,6 @@
 #include"../../include/parser/parser.hpp"
 
+
 namespace parser {  
     AstPtr Parser::parse() {
         std::vector<AstPtr>statms;
@@ -42,7 +43,11 @@ namespace parser {
             case IDEN:
                 type = std::make_shared<Identifier>(toks[cur_index],toks[cur_index].data);
             case MUL:
-            case LPAREN:
+                type = parsePointerType();
+            default:{
+                err::out("expected Token ",toks[cur_index]);
+                next();
+                }
         }
         next();
         return type;
@@ -68,33 +73,17 @@ namespace parser {
 
     AstPtr Parser::parseArrayExpr() {
         uint tok = cur_index;
-        AstPtr len;
+
         std::vector<AstPtr>vals;
+        int lpos;
         if(cur_token == LBRACK){
+            lpos = cur_index;
             next();
-            if(cur_token != RBRACK){
-
-            }else{
-                //err
-            }
-        }else{
-            //err
-        }
-
-        if(cur_token != RBRACK){
-            //err
-        }
-
-        AstPtr type = parseType();
-
-        if(cur_token == LBRACE){
-            next();
-            if(cur_token != RBRACE) {
+            if(cur_token != RBRACK) {
                 
                 do {    
-                    
                     AstPtr ele;
-                    ele = parseExpression();
+                    ele = parsePrimaryExpr();
                     vals.push_back(ele);
 
                 }while(cur_token == COMMA);
@@ -102,18 +91,20 @@ namespace parser {
             }
 
         } else {
-            //err
+            err::out("expected Token ",toks[cur_index]);
+            next();
         }
 
         if(cur_token != RBRACE){
-            //err
+            err::out("expected Token ",toks[cur_index]);
+            next();
         }
-
+        int rpos = cur_index;
         next();
 
         expectToken(SCOL);
 
-        return std::make_shared<ArrayExpr>(tok,len,type,vals);
+        return std::make_shared<ListExpr>(tok,vals);
     }
 
 
@@ -123,9 +114,10 @@ namespace parser {
 
         next();
         if(cur_token == RBRACK){
-            //err
+            err::out("expected Token ",toks[cur_index]);
+            next();
         } else {
-            len = parseExpression();
+            len = parsePrimaryExpr();
         }
         expectToken(RBRACK);
         type = parseType();
@@ -186,10 +178,10 @@ namespace parser {
             case NEW:
             case TYPE:
             case IMPORT:
-
             default:
-
+                statm = parsePrimaryExpr();
         }
+        expectToken(SCOL);
         return statm;
     }
 
@@ -215,68 +207,187 @@ namespace parser {
             }
 
         } else {
-            //err
+            err::out("expected Token ",toks[cur_index]);
+            next();
         }
         
         if(cur_token != RBRACE){
-            //err
+            err::out("expected Token ",toks[cur_index]);
+            next();
         }        
             rpos = cur_index;
         return std::make_shared<BlockStatement>(lpos, statms, rpos);
     }
 
+             // case ASSN_ADD:
+            // case ASSN_DIV:
+            // case ASSN_MOD:
+            // case ASSN_SUB:
+            // case ASSN_MUL:
+            // case AND_ASSN:
+            // case OR_ASSN:
+            // case NOT_ASSN:
+            // case XOR_ASSN:
+            // {
 
-    AstPtr Parser::parseNewStatm() {
-        AstPtr ptr;
+            // }
+
+    AstPtr Parser::parsePointerType(){
         uint tok = cur_index;
+        Token_type op = cur_token;
+        AstPtr base;
+        next();
+        parseType();
+        return std::make_shared<PointerType>(tok, op, base);
+    }
 
-        if(cur_token != NEW){
-            //err
+
+    AstPtr Parser::parsePrefixExpr(){
+        Token_type op = cur_token;
+        uint tok = cur_index;
+        AstPtr expr = parsePrimaryExpr();
+        return std::make_shared<PrefixExper>(tok,expr,op);
+    }
+
+    AstPtr Parser::parsePostfixExpr(AstPtr left){
+        Token_type op = cur_token;
+        uint tok;
+        return std::make_shared<PrefixExper>(tok,left,op);
+    }
+
+
+
+    AstPtr Parser::parsePrimaryExpr() {
+        AstPtr left;
+        switch(cur_token) {
+            case STR:
+            case INT:
+            case FLOAT:
+            case CHAR:
+            case TRUE:
+            case NIL:
+            case FALSE:
+            {
+                left =  parseLitral();
+                break;
+            }
+            case MUL:
+            case ADD:
+            case SUB:
+            case INC:
+            case DEC:
+            case AND_OP:
+            case NOT:
+            case NOT_OP:
+            {
+                left = parsePrefixExpr();
+                break;
+            }
+            case LPAREN:
+            {
+                left = parsePrimaryExpr();
+                break;
+            }
+            case LBRACE:
+            {
+                left = parseStructExpr();
+                break;
+            }
+            case LBRACK:
+            {
+                left = parseArrayExpr();
+                break;
+            }
+            case IDEN:
+            {
+                AstPtr iden = parseIdentifier();
+                next();
+                return parseSecondryExpr(iden);
+            }
+            default:
+            {    err::out("expected Token ",toks[cur_index]);
+                next();}
         }
 
-
-    }
-
-    AstPtr Parser::parseFreeStatm() {
-
+        return left;
     }
 
 
+    
 
-    AstPtr Parser::parseExpression() {
 
-
-    }
-
-    AstPtr Parser::parseLUnaryExpr() {
-        uint tok = cur_index;
-        AstPtr right;
-        Token_type op;
-        op = cur_token;
-        right = parseExpression();
-        return std::make_shared<UnaryExper>(tok,right,op);
-    }
-
-    AstPtr Parser::parseRUnaryExpr(AstPtr left) {
-        uint tok = cur_index;
-        AstPtr x;
-        Token_type op;
-        if(match2(INC,DEC)){
-            op = cur_token;
+    AstPtr Parser::parseSecondryExpr(AstPtr expr) {
+        switch(cur_token) {
+            case MUL:
+            case ADD:
+            case SUB:
+            case DIV:
+            case MOD:
+            case AND:
+            case OR:
+            case XOR_OP:
+            case OR_OP:
+            case AND_OP:
+            case GEQL:
+            case EQL:
+            case NEQL:
+            case GT:
+            case LT:
+            case LEQL:
+            {
+                return parseBineryExpr(expr, m_preced[cur_token]);
+            }
+            case ASSN_ADD:
+            case ASSN_DIV:
+            case ASSN_MOD:
+            case ASSN_SUB:
+            case ASSN_MUL:
+            case AND_ASSN:
+            case OR_ASSN:
+            case NOT_ASSN:
+            case XOR_ASSN:
+            case ASSN:
+            {
+                return parseAssignment(expr);
+            }
+            case INC:
+            case DEC:
+            {
+                return parsePostfixExpr(expr);
+            }
+            case DOT:
+            case ARROW:
+            {
+                return parseDotOrArrow(expr);
+            }
+            case LPAREN:
+            {
+                return parseFuncCall();
+            }
+            case LBRACK:
+            {
+                return parseArrayAccess(expr);
+            }
+            default:
+                {err::out("expected Token ",toks[cur_index]);
+            next();}
         }
-        return std::make_shared<UnaryExper>(tok,left,op);
 
+        return expr;
     }
+
 
     AstPtr Parser::parseBineryExpr(AstPtr left, int prev_prece) {
         uint tok = cur_index;
         Token_type opr;
         AstPtr right;
         if(left == nullptr) {
-            left = parseExpression();
+            left = parsePrimaryExpr();
         }
         //2+3*3/4+2*3
-        while(cur_token != SCOL||cur_token!=RPAREN){
+        while(cur_token != SCOL || cur_token!=RPAREN
+                                || cur_token != RBRACE
+                                || cur_token != RBRACK) {
             opr = cur_token;
             if(prev_prece > m_preced[opr]) {
                 return left;
@@ -301,10 +412,11 @@ namespace parser {
             if(next_t().tok_type == IDEN || next_t().tok_type == LPAREN){
            
                 next();
-                right = parseExpression();
+                right = parsePrimaryExpr();
            
             }else{
-                //err
+                err::out("expected Token ",toks[cur_index]);
+                next();
             }
         }
 
@@ -321,10 +433,11 @@ namespace parser {
         
         if(cur_token != RBRACK){
 
-            expr = parseExpression();
+            expr = parsePrimaryExpr();
 
         } else {
-            //err
+            err::out("expected Token ",toks[cur_index]);
+            next();
         }
         
         rpos = cur_index;
@@ -332,9 +445,6 @@ namespace parser {
         
         return std::make_shared<IndexExpr>(tok_pos,left,lpos,expr,rpos);
     }
-
-   
-    
 
 
     AstPtr Parser::parseFuncCall() {
@@ -351,7 +461,7 @@ namespace parser {
 
                 AstPtr arg;
 
-                arg = parseExpression();
+                arg = parsePrimaryExpr();
 
                 args.push_back(arg);
 
@@ -360,11 +470,13 @@ namespace parser {
             }
             
         } else {
-            //err
+            err::out("expected Token ",toks[cur_index]);
+            next();
         }
 
         if(cur_token != RPAREN){
-            //err
+            err::out("expected Token ",toks[cur_index]);
+            next();
         }
 
         return std::make_shared<FunctionCall>(pos, name, args);
@@ -377,15 +489,45 @@ namespace parser {
         AstPtr iden,type;
         
         if(cur_token == MUL || cur_token == LPAREN || cur_token == IDEN){
-            iden = parseExpression();
+            iden = parsePrimaryExpr();
         } else {
-            //err
+            err::out("expected Token ",toks[cur_index]);
+            next();
         }
 
         type = parseType();
         return std::make_shared<Param>(tok, iden, type);
     }
 
+
+    AstPtr Parser::parseStructExpr() {
+        uint tok = cur_index;
+        std::vector<AstPtr> vals;
+        int lpos;
+        if(cur_token != LBRACE){
+            lpos = cur_index;
+            next();
+            if(cur_token != RBRACE){
+                do{
+                    AstPtr mem;
+                    mem = parsePrimaryExpr();
+                    vals.push_back(mem);
+                }while(cur_token == COMMA);
+            }else{
+                err::out("expected Token ",toks[cur_index]);
+                next();
+            }
+        }
+
+        if(cur_token != RBRACE) {
+            err::out("expected Token ",toks[cur_index]);
+            next();
+        }
+        int rpos = cur_index;
+
+        return std::make_shared<ListExpr>(tok, lpos, vals, rpos);
+
+    }
 
 
     AstPtr Parser::parseStruct() {
@@ -395,6 +537,7 @@ namespace parser {
         expectToken(STRUCT);
 
         if(cur_token == LBRACE) {
+            next();
             if(cur_token != RBRACE){
 
                 do {
@@ -405,9 +548,14 @@ namespace parser {
                     element.push_back(member);
 
                 }while(cur_token == COMMA);
+            }else{
+                err::out("expected Token ",toks[cur_index]);
+                next();
             }
+
         }else {
-            //err
+            err::out("expected Token ",toks[cur_index]);
+            next();
         }
 
         
@@ -416,6 +564,22 @@ namespace parser {
         return std::make_shared<StructState>(tok, element);
     }
 
+
+    AstPtr Parser::parseNewStatm() {
+        AstPtr ptr;
+        uint tok = cur_index;
+
+        if(cur_token != NEW){
+            err::out("expected Token ",toks[cur_index]);
+            next();
+        }
+
+
+    }
+
+    AstPtr Parser::parseFreeStatm() {
+
+    }
 
 
     AstPtr Parser::parseFuncdef(){
@@ -426,7 +590,7 @@ namespace parser {
         AstPtr body;
         expectToken(FN);
 
-        funtype = parseExpression();
+        funtype = parseIdentifier();
         
         if(cur_token == LPAREN){
             next();
@@ -439,11 +603,12 @@ namespace parser {
                     
                     parameter.push_back(member);
 
-                }while(cur_token == COMMA);
+                } while(cur_token == COMMA);
 
             }
         }else {
-            //err
+            err::out("expected Token ",toks[cur_index]);
+            next();
         }
 
         if(cur_token != RPAREN){
@@ -452,12 +617,13 @@ namespace parser {
 
         retype = parseType();
 
-        if(cur_token )
+
 
         body = parseBlockStatement();
 
         return std::make_shared<FunctionDef>(pos, funtype, parameter, retype, body);
     }
+
 
     AstPtr Parser::parseConst() {
         uint tok;
@@ -465,7 +631,8 @@ namespace parser {
         expectToken(CONST);
 
         if(cur_token != IDEN){
-            //err
+            err::out("expected Token ",toks[cur_index]);
+            next();
         }
 
         AstPtr name = parseIdentifier();
@@ -473,9 +640,10 @@ namespace parser {
         AstPtr val;
         if(cur_token == ASSN){
             next();
-            val = parseExpression();
+            val = parsePrimaryExpr();
         }else {
-            //err;
+            err::out("expected Token ",toks[cur_index]);
+            next();
         }
 
         expectToken(SCOL);
@@ -489,11 +657,12 @@ namespace parser {
         AstPtr val;
         
         if(cur_token != SCOL){
-            val = parseExpression();
+            val = parsePrimaryExpr();
         }
 
         if(cur_token != SCOL){
-            //err
+            err::out("expected Token ",toks[cur_index]);
+            next();
         }
         return std::make_shared<ReturnState>(pos, val);
     }
@@ -507,13 +676,15 @@ namespace parser {
         AstPtr else_;
 
         if(cur_token == LBRACE) {
-            //err
+            err::out("expected Token ",toks[cur_index]);
+            next();
         } else {
-            condition = parseExpression();
+            condition = parsePrimaryExpr();
         }
 
         if(cur_token != LBRACE) {
-            //err
+            err::out("expected Token ",toks[cur_index]);
+            next();
         }
 
         if_ = parseBlockStatement();
@@ -526,7 +697,8 @@ namespace parser {
                 case LBRACE:
                     else_ = parseBlockStatement();
                 default:
-                    //err
+                    err::out("expected Token ",toks[cur_index]);
+                    next();
             }
         }
         expectToken(RBRACE);
@@ -552,6 +724,7 @@ namespace parser {
         }while(cur_token == COMMA);
         
         type = parseType();
+        expectToken(SCOL);
         
         return std::make_shared<VariableState>(tok, var, type);
     }
@@ -566,9 +739,11 @@ namespace parser {
 
         op = cur_token;
 
-        expectToken(ASSN);
+        if(cur_token != ASSN){
+            err::out("expected Token ",toks[cur_index]);
+        }
 
-        right = parseExpression();
+        right = parsePrimaryExpr();
         
         expectToken(SCOL);
 
@@ -611,7 +786,6 @@ namespace parser {
         } 
         
         body = parseBlockStatement();
-        // expectToken(LBRACE);
 
         if(isIN){
             
@@ -619,7 +793,6 @@ namespace parser {
         }
 
         return std::make_shared<ForLoopState>(h1,h2,h3,body,pos);
-        
     
     }
 }
