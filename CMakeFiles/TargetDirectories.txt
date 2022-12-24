@@ -1,0 +1,3 @@
+/Users/sahilpatidar/Desktop/funlang/CMakeFiles/fun.dir
+/Users/sahilpatidar/Desktop/funlang/CMakeFiles/edit_cache.dir
+/Users/sahilpatidar/Desktop/funlang/CMakeFiles/rebuild_cache.dir

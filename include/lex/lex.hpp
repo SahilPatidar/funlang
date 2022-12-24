@@ -1,5 +1,5 @@
-#ifndef LEX_HPP
-#define LEX_HPP
+#pragma once
+
 
 //#include <cstdio>
 #include <iostream>
@@ -132,4 +132,4 @@ namespace lex
     }
 }
 
-#endif
+

@@ -1,5 +1,5 @@
 import {  }
-type car enum{
+var car enum{
 
 };
 

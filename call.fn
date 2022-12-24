@@ -1,14 +1,7 @@
-io = import(std)
+a = a[a+b]*b;
 
-fn call() (caller,i8) {
-    
+fn call() i16 {
+    var a i8;
+    var b [8]i16;
+    return *a;
 }
-
-fn main() i32 {
-    var a string;
-    var d = 232;
-    io.print(call);
-    return 0;
-}
-
-

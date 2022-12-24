@@ -1,3 +1,4 @@
+
 #include"../../include/parser/parser.hpp"
 
 namespace parser {
@@ -9,30 +10,18 @@ namespace parser {
         }
     }
 
-    void Parser::expectErr(int index) {
+    bool Parser::BineryOP(Token_type tok) {
+        return tok == MUL || tok == DIV || tok == MOD ||
+            tok == ADD || tok == SUB || tok == LSHIFT || 
+            tok == RSHIFT || tok == LT || tok == LEQL || 
+            tok == GT ||tok == GEQL || tok == EQL || tok == NEQL ||
+            tok == AND || tok == XOR_OP || tok == OR || 
+            tok == AND_OP || tok == OR_OP;
+    }   
 
-    }
-
-    void Parser::expectToken(Token_type tok){
-        if(toks[cur_index].tok_type == tok){
-            next();
-        }else {
-            err::out("expected Token ",toks[cur_index]);
-            next();
-        }
-    }
-
-    __attribute__((flatten)) inline bool Parser::match2(Token_type t1, Token_type t2) {
-        return cur_token == t1 || cur_token == t2;
-    }
-
-    
     tokt Parser::next_t() {
         return (cur_index+1 < toks.size())?toks[cur_index+1]:toks[cur_index];
     }
 
-    std::map<Token_type,int> preced_map() {
-
-    }
 
 }

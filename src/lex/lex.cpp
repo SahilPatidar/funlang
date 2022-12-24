@@ -158,10 +158,12 @@ namespace lex
             if(CUR == '/'&& NXT == '/'){
                 comment_line = true;
                 i++;
+                continue;
             }
+            if(isalpha(src[i])&&!isalnum(PRV)&&!isalnum(PRV)&&PRV != '\''&&PRV != '\"'&&PRV!=')') {
 
-            if(isalpha(src[i])&&!isalnum(PRV)&&PRV != '\''&&PRV != '\"'&&PRV!=']'&&PRV!=')') {
                 std::string str = get_string(src, i);
+
                 if(str == ""){
                     return false;
                 }
@@ -198,6 +200,8 @@ namespace lex
                 toks.push_back(tokt(line, i - line_start - start_pos, token[type], type));
                 continue;
             }
+            std::cout<<"error :: expected token "<<src[i]<<std::endl;
+            exit(1);
         }
         toks.push_back(tokt(line, i - line_start - start_pos, token[FEOF], FEOF));
         return true;

@@ -1,8 +1,18 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.10)
 
 project(fun)
 
 include_directories(include)
-set(SOURCES src/main.cpp src/lex/lex.cpp)
+set(SOURCES 
+src/main.cpp
+src/lex/lex.cpp 
+src/parser/util.cpp
+src/parser/parser.cpp 
+src/parser/Ast.cpp 
+)
 
 add_executable(fun ${SOURCES})
+
+target_include_directories(fun PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+

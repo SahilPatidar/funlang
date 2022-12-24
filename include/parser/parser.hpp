@@ -1,68 +1,61 @@
-#ifndef PARSER_H
-#define PARSER_H
+#pragma once
 
+#include<iostream>
 #include"Ast.hpp"
 #include<map>
-#include"include/Error.hpp"
 
 using namespace ast;
 namespace parser{
     using namespace lex;
-    std::map<Token_type,int> preced_map();
+
     class Parser {   
-        Token_type cur_token;
         tok_t toks;
-        int cur_index = 0;
-        std::map<Token_type,int> m_preced = preced_map();
-        std::string path;
-        std::string file_name;
+        uint cur_index;
+
+        // std::string path;
+        // std::string file_name;
+        Token_type cur_token;
         tokt next_t();
         void next();
-        void expectErr(int index);
-        __attribute__((flatten)) inline void expectToken(Token_type tok);
-        __attribute__((flatten)) inline bool match1(Token_type t1);
-        __attribute__((flatten)) inline bool match2(Token_type t1, Token_type t2);
-        __attribute__((flatten)) inline bool match3(Token_type t1, Token_type t2, Token_type t3);
+        int preced(Token_type op);
+        bool BineryOP(Token_type tok);
+
+
         AstPtr parseBlockStatement();
         AstPtr parsePointerType();
         AstPtr parseIdentifier();
         AstPtr parseLitral();
+        AstPtr parseParenExpr();
         AstPtr parseType();
-        AstPtr parseTypeDef();
+        AstPtr parseTypeStatm();
         AstPtr parseArrayType();
         AstPtr parseArrayExpr();
         AstPtr parseArrayAccess(AstPtr left); 
         AstPtr parseFor();
-        AstPtr parseEnum();
         AstPtr parseDotOrArrow(AstPtr left);
         AstPtr parseAssignment(AstPtr left);
-        AstPtr parseSecondryExpr(AstPtr expr);
-        AstPtr parsePrimaryExpr();
+        AstPtr parseSecondryExpr(AstPtr left,int precedence);
+        AstPtr parsePrimaryExpr(int precedence);
         AstPtr parsePostfixExpr(AstPtr left);
         AstPtr parsePrefixExpr();
         AstPtr parseBineryExpr(AstPtr left, int prev_prece);
         AstPtr parseStruct();
         AstPtr parseStructExpr();
         AstPtr parseReturn();
-        AstPtr parseTypeCast();
         AstPtr parseIfStatm();
         AstPtr parseConst();
         AstPtr parseStatement();
-        AstPtr parseFreeStatm();
-        AstPtr parseNewStatm();
         AstPtr parseVarStatm();
-        AstPtr parseVarList();
         AstPtr parseFuncdef();
-        AstPtr parseFuncCall();
-        AstPtr parseArgList();
+        AstPtr parseFuncCall(AstPtr caller_name);
         AstPtr parseTypeValuePair();
         public:
-        Parser(tok_t &_toks, std::string _path, std::string _file_name)
-        :toks(_toks), path(_path), file_name(_file_name) {}
-        ~Parser();
+        Parser(tok_t &_toks, int index)
+        : toks(_toks), cur_index(index), cur_token(toks[cur_index].tok_type)
+        {}
+        ~Parser() {}
         AstPtr parse();
     };
 
 }
 
-#endif
