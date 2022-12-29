@@ -4,19 +4,41 @@
 #include<vector>
 #include<memory>
 #include"../lex/lex.hpp"
+//#include"../analyzer/ast_visitor.hpp"
 
 using namespace lex;
 namespace ast{
 
+    const enum Node_Name{
+        NODE_BLOCK,
+        NODE_NUM_LITRAL,
+        NODE_STR_LITRAL,
+        NODE_BOOL_LITRAL,
+        NODE_FLOAT_LITRAL,
+        NODE_NULL_LITRAL,
+        NODE_IF_STM,
+        NODE_FOR_STM,
+        NODE_CONST_STM,
+        NODE_LET_STM,
+        NODE_BLOCK,
+        NODE_BLOCK,
+        NODE_BLOCK,
+        NODE_BLOCK,
+        NODE_BLOCK,
+        NODE_BLOCK,
+        NODE_BLOCK,
+        NODE_BLOCK,
+        NODE_BLOCK,
+        NODE_BLOCK,
+        NODE_BLOCK,
+    };
 
     class Ast {
-    protected:
-        tok_t t;
     public:
         virtual ~Ast() = default;
 
         virtual std::string node_str() const = 0;
-       // virtual void accept() const = 0;
+        virtual void accept(AstVisitor& visitor) const = 0;
     };
    
     using AstPtr = std::shared_ptr<Ast>;
@@ -32,7 +54,7 @@ namespace ast{
         tokt token() const { return tok; }
         std::vector<AstPtr> statements() const { return statms; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;    
     };
 
   
@@ -47,7 +69,7 @@ namespace ast{
 
         tokt token() const { return tok; };
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
     class BoolLitral: public Ast {
@@ -61,7 +83,7 @@ namespace ast{
         //std::string value() const;
         tokt token() const { return tok; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
     class StringLitral: public Ast {
@@ -76,7 +98,7 @@ namespace ast{
         //std::string value() const{ return tok.data; }
         bool ischar() const{ return chr; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -89,7 +111,7 @@ namespace ast{
 
         tokt token() const{ return tok; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
     class FloatLitral: public Ast {
@@ -102,7 +124,7 @@ namespace ast{
         tokt token() const{ return tok; }
         //std::string value() const { return tok.data; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
     class Identifier: public Ast {
@@ -114,7 +136,7 @@ namespace ast{
 
         tokt token() const{ return tok; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -131,7 +153,7 @@ namespace ast{
         std::vector<AstPtr> statement();
         int rParen() const;
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
     
     
@@ -148,7 +170,7 @@ namespace ast{
         tokt token() const{ return tok; }
         std::vector<std::pair<AstPtr,AstPtr> > value() const{return u_data;}
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -162,7 +184,7 @@ namespace ast{
        
         tokt token() const{ return tok; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
     class StringType: public Ast {
@@ -175,7 +197,7 @@ namespace ast{
         
         tokt token() const{ return tok; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
     
@@ -189,7 +211,7 @@ namespace ast{
         
         tokt token() const{ return tok; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
     class BoolType: public Ast {
@@ -201,7 +223,7 @@ namespace ast{
         
         tokt token() const { return tok; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -218,7 +240,7 @@ namespace ast{
         AstPtr left_opar() const{ return left; }
         AstPtr right_opar() const{return right;}
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -237,7 +259,7 @@ namespace ast{
         AstPtr vartype() const{return type;}
         AstPtr value() const{return val;}
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -260,7 +282,7 @@ namespace ast{
         AstPtr arry_index() const{return index;}
         int r_position() const{return rpos;}
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
 
     };
 
@@ -278,7 +300,7 @@ namespace ast{
         AstPtr arraysize() const{return size;}
         AstPtr arraytype() const{return type;}
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -299,7 +321,7 @@ namespace ast{
         Token_type oprator() const{return op;}
         AstPtr rightOpr() const{return right;}
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -314,7 +336,7 @@ namespace ast{
 
     //     tokt token() const;
     //     AstPtr import_path() const;
-    //     //void accept() const;
+    //     void accept(AstVisitor& visitor) const;
     // };
 
     
@@ -334,7 +356,7 @@ namespace ast{
         Token_type oprator() const{return op;}
         AstPtr variable() const{return var;}
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -353,7 +375,7 @@ namespace ast{
         tokt token() const { return tok; }
         AstPtr variable() const { return var; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -378,7 +400,7 @@ namespace ast{
         AstPtr loopBody() const { return body; }
         tokt token() const {return tok; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
 
     };
 
@@ -401,7 +423,7 @@ namespace ast{
         AstPtr in_body() const { return body; }
         tokt token() const {return tok; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
 
     };
 
@@ -425,7 +447,7 @@ namespace ast{
         AstPtr if_body() const { return ifbody; }
         AstPtr else_body() const { return  elbody; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -442,7 +464,7 @@ namespace ast{
         tokt token() const { return tok; }
         AstPtr type() const { return base; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -455,7 +477,7 @@ namespace ast{
 
         tokt token() const { return tok; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -475,7 +497,7 @@ namespace ast{
         Token_type mem_operator() const{return mem_op;}
         AstPtr rightid() const{return right;}
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -492,7 +514,7 @@ namespace ast{
         tokt token() const { return tok; }
         std::vector<AstPtr> element() const { return elemt; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -509,12 +531,12 @@ namespace ast{
         tokt token() const { return tok; }
         std::vector<AstPtr> listof() const { return list; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
 
-    class AssignmentState: public Ast {
+    class AssignmentExpr: public Ast {
         private:
         tokt tok;
         AstPtr left;
@@ -522,7 +544,7 @@ namespace ast{
         AstPtr right;
         
         public:
-        AssignmentState(tokt &_tok, AstPtr &_left, Token_type &_assop, AstPtr &_right)
+        AssignmentExpr(tokt &_tok, AstPtr &_left, Token_type &_assop, AstPtr &_right)
         : tok(_tok), left(_left), op(_assop), right(_right) {}
        
         tokt token() const{ return tok; }
@@ -530,7 +552,7 @@ namespace ast{
         Token_type opreator() const{return op;}
         AstPtr rightVal() const{return right;}
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -547,7 +569,7 @@ namespace ast{
         tokt token() const { return tok; }
         AstPtr typePtr() const{ return type; }
         std::string node_str() const {return "";}
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
 
     };
 
@@ -566,25 +588,25 @@ namespace ast{
         tokt token() const { return tok; }
         AstPtr typePtr() const{ return ptr; }
         std::string node_str() const{return "";}
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
 
     };
 
 
-    class VariableState: public Ast {
+    class LetState: public Ast {
         private:
         tokt tok;
         std::vector<AstPtr> name;
         AstPtr type;
         public:
-        VariableState(tokt &_tok, std::vector<AstPtr> &_var, AstPtr &_type)
+        LetState(tokt &_tok, std::vector<AstPtr> &_var, AstPtr &_type)
         : tok(_tok), name(_var), type(_type) {}
 
         tokt token() const{ return tok; }
         std::vector<AstPtr> varname() const{return name;}
         AstPtr vartype() const{return type;}
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -601,7 +623,7 @@ namespace ast{
         AstPtr identifier() const{ return iden; }
         AstPtr p_type() const{ return type; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -625,7 +647,7 @@ namespace ast{
         AstPtr ret_type() const { return retype; }
         AstPtr func_body() const { return body; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -641,7 +663,7 @@ namespace ast{
         tokt token() const { return tok; }
         AstPtr value() { return ret_val; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 
@@ -660,7 +682,7 @@ namespace ast{
         AstPtr funcname() const { return name; }
         std::vector<AstPtr> arg() const { return args; }
         std::string node_str() const;
-        //void accept() const;
+        void accept(AstVisitor& visitor) const;
     };
 
 }

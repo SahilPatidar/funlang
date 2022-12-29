@@ -132,8 +132,8 @@ namespace parser {
                 statm = parseIfStatm();
                 break;
 
-            case VAR:
-                statm = parseVarStatm();
+            case LET:
+                statm = parseLetStatm();
                 break;
 
             case RETURN:
@@ -169,6 +169,10 @@ namespace parser {
             case IMPORT:
             default:
                 statm = parsePrimaryExpr(0);
+                if(!statm){
+                    err::out("expected statment checker ",toks[cur_index]); 
+                    next();
+                }
                 break;
         }
         return statm;
@@ -338,17 +342,24 @@ namespace parser {
             {
                 next();
                 std::cout<<"step :: entering paren exper "<<toks[cur_index].data<<std::endl;
-                if(cur_token == LPAREN){
-                    left = parsePrimaryExpr(0);
-                    left = parseSecondryExpr(left,0);
-                } else {
-                    left = parsePrimaryExpr(0);
-                }
+                left = parsePrimaryExpr(0);
                 std::cout<<"step :: returing paren exper "<<toks[cur_index].data<<std::endl;
                 if(cur_token != RPAREN){
                     err::out("expected close PAREN ",toks[cur_index]);
                 }
                 next();
+                switch(cur_token){
+                    case DOT:
+                    case ARROW:
+                        left = parseDotOrArrow(left);
+                        break;
+                    // case LPAREN:
+                    //     left = parseFuncCall(left);
+                    //     break;
+                    default:
+                        left = parseSecondryExpr(left,precedence);
+                        break;
+                }
                 break;
             }
             case LBRACE:
@@ -362,7 +373,7 @@ namespace parser {
                 break;
             }
             case RPAREN:
-            case COMMA:
+            //case COMMA:
             case SCOL:
             case RBRACE:
             case RBRACK:
@@ -484,10 +495,11 @@ namespace parser {
         if(left == nullptr) {
             left = parsePrimaryExpr(prev_prece);
         }
+                    std::cout<<"step :: entering binery exper "<<" "<<toks[cur_index].data<<std::endl;
+
         //2+3*3/4+2*3
         while(BineryOP(cur_token)) {
             opr = cur_token;
-            std::cout<<"step :: entering binery exper "<<" "<<toks[cur_index].data<<std::endl;
             if(prev_prece > preced(opr)) {
                 return left;
             }
@@ -851,13 +863,13 @@ namespace parser {
 
 
 
-    AstPtr Parser::parseVarStatm() {
+    AstPtr Parser::parseLetStatm() {
         tokt tok = toks[cur_index];
         std::vector<AstPtr> var;
         AstPtr type;
         std::cout<<"entering var "<<toks[cur_index].data<<std::endl;
 
-        if(cur_token != VAR){
+        if(cur_token != LET){
             err::out("expected var ",toks[cur_index]);
             
         }
@@ -882,7 +894,7 @@ namespace parser {
                     next();
 
         }
-        return std::make_shared<VariableState>(tok, var, type);
+        return std::make_shared<LetState>(tok, var, type);
     }
 
 
@@ -895,7 +907,7 @@ namespace parser {
         std::cout<<"entering assinment oper = "<<toks[cur_index].data<<std::endl;
         next();
         right = parsePrimaryExpr(0);
-        return std::make_shared<AssignmentState>(tok, left, op, right);
+        return std::make_shared<AssignmentExpr>(tok, left, op, right);
     }
 
 

@@ -20,7 +20,7 @@ namespace lex
         "fn",
         "for",
         "in",
-        "var",
+        "let",
         "return",
         "continue",
         "break",
@@ -223,7 +223,7 @@ namespace lex
         if(src == token[RETURN])return RETURN;
         if(src == token[FALSE])return FALSE;
         if(src == token[CONST])return CONST;
-        if(src == token[VAR])return VAR;
+        if(src == token[LET])return LET;
         if(src == token[ENUM])return ENUM;
         if(src == token[IMPORT])return IMPORT;
         if(src == token[STRING])return STRING;

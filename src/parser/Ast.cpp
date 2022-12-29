@@ -103,8 +103,8 @@ namespace ast {
         return str;
     }
 
-    std::string VariableState::node_str() const {
-        std::string str = "var";
+    std::string LetState::node_str() const {
+        std::string str = "let";
         str += " ";
         for(int i = 0 ; i < name.size(); i++){
             if(i)
@@ -146,15 +146,15 @@ namespace ast {
     
     std::string PrefixExper::node_str() const {
         std::string str = "";
-        str = lex::token[op];
-        str = var->node_str();
+        str += lex::token[op];
+        str += var->node_str();
         return str;
     }
     
     std::string PostfixExper::node_str() const {
         std::string str = "";
-        str = lex::token[op];
-        str = var->node_str();
+        str += lex::token[op];
+        str += var->node_str();
         return str;
     }
     
@@ -241,7 +241,7 @@ namespace ast {
         return str;
     }
     
-    std::string AssignmentState::node_str() const {
+    std::string AssignmentExpr::node_str() const {
         std::string str = "";
         str += left->node_str();
         str += " = ";

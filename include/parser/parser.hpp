@@ -45,7 +45,7 @@ namespace parser{
         AstPtr parseIfStatm();
         AstPtr parseConst();
         AstPtr parseStatement();
-        AstPtr parseVarStatm();
+        AstPtr parseLetStatm();
         AstPtr parseFuncdef();
         AstPtr parseFuncCall(AstPtr caller_name);
         AstPtr parseTypeValuePair();

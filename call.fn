@@ -1,7 +1,1 @@
-a = a[a+b]*b;
-
-fn call() i16 {
-    var a i8;
-    var b [8]i16;
-    return *a;
-}
+(*a).b = 0;

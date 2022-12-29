@@ -24,7 +24,7 @@ namespace lex
         FN,
         FOR,
         IN,
-        VAR,
+        LET,
         RETURN,
         CONTINUE,
         BREAK,
