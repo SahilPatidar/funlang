@@ -4,146 +4,142 @@
 namespace ast{
 
 void Program::accept(AstVisitor &visitor) const {
-    if(!visitor.valid(*this)){
+    if(!visitor.visit(*this)){
         //for()
     }
 }
 
 void BlockStatement::accept(AstVisitor &visitor) const {
-    if(!visitor.valid(*this)){
+    if(!visitor.visit(*this)){
         //for()
     }
 }
 
 void ForLoopState::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void FunctionDef::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void ConstState::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void BranchState::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void StructState::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void InState::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void ReturnState::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void IfStatement::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void LetState::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void FreeState::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 
 
 
-void BoolLitral::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+void BoolLiteral::accept(AstVisitor &visitor) const {
+    visitor.visit(*this);
 }
 
-void NumericLitral::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+void NumericLiteral::accept(AstVisitor &visitor) const {
+    visitor.visit(*this);
 }
 
-void NullLitral::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+void NullLiteral::accept(AstVisitor &visitor) const {
+    visitor.visit(*this);
 }
 
-void StringLitral::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+void StringLiteral::accept(AstVisitor &visitor) const {
+    visitor.visit(*this);
 }
 
-void FloatLitral::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+void FloatLiteral::accept(AstVisitor &visitor) const {
+    visitor.visit(*this);
 }
 
 
 void BineryExper::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void AssignmentExpr::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void PostfixExper::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void PrefixExper::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void PointerType::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void ListExpr::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void FunctionCall::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void MemberExpr::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
   
 void IndexExpr::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void Parameter::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
   
 
 
 void ArrayType::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void IntType::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void BoolType::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void FloatType::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
 
 void StringType::accept(AstVisitor &visitor) const {
-    visitor.valid(*this);
+    visitor.visit(*this);
 }
-
-
-
-
 
 
 }

@@ -33,7 +33,7 @@ void compile(){
    ast::AstPtr tree = p.parse();
 
 
-   std::cout<<" -> "<<tree->node_str()<<std::endl;
+   std::cout<<" -> "<<tree->toString()<<std::endl;
 
 
 }

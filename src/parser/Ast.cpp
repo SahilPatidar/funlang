@@ -3,299 +3,299 @@
 
 namespace ast {
     
-    std::string Program::node_str() const {
+    std::string Program::toString() const {
         std::string str = "";
         std::cout<<statms.size()<<std::endl;
 
         for(auto& statm:statms){
-            str += statm->node_str();
+            str += statm->toString();
             str += '\n';
         }
         return str;
     }
 
-    std::string NumericLitral::node_str() const{
+    std::string NumericLiteral::toString() const{
         return tok.data;
     }
 
-    std::string FloatLitral::node_str() const{
+    std::string FloatLiteral::toString() const{
         return tok.data;
     }
 
-    std::string BoolLitral::node_str() const {
+    std::string BoolLiteral::toString() const {
         return tok.data;
     }
 
-    std::string StringLitral::node_str() const {
+    std::string StringLiteral::toString() const {
         return tok.data;
     }
 
-    std::string NullLitral::node_str() const {
+    std::string NullLiteral::toString() const {
         return tok.data;
     }
 
-    std::string Identifier::node_str() const {
+    std::string Identifier::toString() const {
         return tok.data;
     }
 
-    std::string BlockStatement::node_str() const {
+    std::string BlockStatement::toString() const {
         std::string str = "";
         for(auto& statm:statms){
-            str += statm->node_str();
+            str += statm->toString();
             str += ";\n";
         }
         return str;
     }
 
-    std::string EnumLitral::node_str() const {
+    std::string EnumLitral::toString() const {
         std::string str = "enum ";
 
         for (size_t i = 0; i < u_data.size(); i++) {
             if (i)
                 str += "\n";
 
-            str += u_data[i].first->node_str();
+            str += u_data[i].first->toString();
             if (u_data[i].second) {
                 str += " = ";
-                str += u_data[i].second->node_str();
+                str += u_data[i].second->toString();
             }
         }
 
         return str;
     }
 
-    std::string IntType::node_str() const {
+    std::string IntType::toString() const {
         return tok.data;
     }
     
-    std::string StringType::node_str() const {
+    std::string StringType::toString() const {
         return tok.data;
     }
     
-    std::string FloatType::node_str() const {
+    std::string FloatType::toString() const {
         return tok.data;
     }
 
-    std::string BoolType::node_str() const {
+    std::string BoolType::toString() const {
         return tok.data;
     }
 
-    std::string TypeState::node_str() const {
+    std::string TypeState::toString() const {
         std::string str = "";
         str += tok.data;
         str += " ";
-        str += left->node_str();
+        str += left->toString();
         str += " ";
-        str += right->node_str();
+        str += right->toString();
         str += ";";
         return str;
     }
 
-    std::string ConstState::node_str() const {
+    std::string ConstState::toString() const {
         std::string str = "const";
         str += " ";
-        str += name->node_str();
+        str += name->toString();
         str += " ";
-        str += type->node_str();
+        str += type->toString();
         str += " = ";
-        str += val->node_str();
+        str += val->toString();
         str += ";";
         return str;
     }
 
-    std::string LetState::node_str() const {
+    std::string LetState::toString() const {
         std::string str = "let";
         str += " ";
         for(int i = 0 ; i < name.size(); i++){
             if(i)
                 str += ",";
-            str += name[i]->node_str();
+            str += name[i]->toString();
         }
         
         str += " ";
-        str += type->node_str();
+        str += type->toString();
         return str;
     }
 
-    std::string ArrayType::node_str() const {
+    std::string ArrayType::toString() const {
         std::string str = "[";
-        str += size->node_str();
+        str += size->toString();
         str += "]";
-        str += type->node_str();
+        str += type->toString();
         return str;
     }
 
-    std::string IndexExpr::node_str() const {
+    std::string IndexExpr::toString() const {
         std::string str = "";
-        str += expr->node_str();
+        str += expr->toString();
         str += "[";
-        str += index->node_str();
+        str += index->toString();
         str += "]";
         return str;
     }
     
-    std::string BineryExper::node_str() const {
+    std::string BineryExper::toString() const {
         std::string str = "";
         str += " (-> ";
-        str += left->node_str();
+        str += left->toString();
         str += lex::token[op];
-        str += right->node_str();
+        str += right->toString();
         str += " <-) ";
         return str;
     }
     
-    std::string PrefixExper::node_str() const {
+    std::string PrefixExper::toString() const {
         std::string str = "";
         str += lex::token[op];
-        str += var->node_str();
+        str += var->toString();
         return str;
     }
     
-    std::string PostfixExper::node_str() const {
+    std::string PostfixExper::toString() const {
         std::string str = "";
         str += lex::token[op];
-        str += var->node_str();
+        str += var->toString();
         return str;
     }
     
-    std::string ForLoopState::node_str() const {
+    std::string ForLoopState::toString() const {
         std::string str = "for ";
         if(h1)
-         str += h1->node_str();
+         str += h1->toString();
     
-        str += h2->node_str();
+        str += h2->toString();
 
         if(h3)
-         str += h3->node_str();
+         str += h3->toString();
         str += "{\n";
-        str += body->node_str();
+        str += body->toString();
         str += "}\n";
         return str;
     }
     
-    std::string InState::node_str() const {
+    std::string InState::toString() const {
         std::string str = "for";
-        str += left->node_str();
+        str += left->toString();
         str += "in";
-        str += right->node_str();
+        str += right->toString();
         str += "{\n";
-        str += body->node_str();
+        str += body->toString();
         str += "}\n";
         return str;
     }   
     
-    std::string IfStatement::node_str() const {
+    std::string IfStatement::toString() const {
         std::string str = "if ";
-        str += cond->node_str();
+        str += cond->toString();
         str += " {\n";
-        str +=  ifbody->node_str();
+        str +=  ifbody->toString();
         str += " } ";
         if(elbody){
             str += "else ";
             str += " {\n";
-            str += elbody->node_str();
+            str += elbody->toString();
             str += " }";
         }
         return str + "\n";
     }
     
-    std::string PointerType::node_str() const {
+    std::string PointerType::toString() const {
         std::string str = "*";
-        str += base->node_str();
+        str += base->toString();
         return str;
     }
     
-    std::string BranchState::node_str() const {
+    std::string BranchState::toString() const {
         return tok.data + ";\n";
     }
     
-    std::string MemberExpr::node_str() const {
+    std::string MemberExpr::toString() const {
         std::string str = "";
-        str += left->node_str();
+        str += left->toString();
         if(mem_op == DOT)
             str += ".";
         else
             str += "->";
-        str += right->node_str();
+        str += right->toString();
         return str;
     }
     
-    std::string StructState::node_str() const {
+    std::string StructState::toString() const {
         std::string str = "struct";
         str += "{";
         for(int i = 0 ; i < elemt.size(); i++){
-            str += elemt[i]->node_str();
+            str += elemt[i]->toString();
             str += ";\n";
         }
         str += "};";
         return str;
     }
     
-    std::string ListExpr::node_str() const {
+    std::string ListExpr::toString() const {
         std::string str = " { ";
         for(int i = 0 ; i < list.size(); i++){
-            str += list[i]->node_str();
+            str += list[i]->toString();
             str += ",";
         }
         str += " };\n";
         return str;
     }
     
-    std::string AssignmentExpr::node_str() const {
+    std::string AssignmentExpr::toString() const {
         std::string str = "";
-        str += left->node_str();
+        str += left->toString();
         str += " = ";
-        str += right->node_str();
+        str += right->toString();
         str += ";\n";
         return str;
     }
     
-    std::string Parameter::node_str() const {
+    std::string Parameter::toString() const {
         std::string str = "";
-        str += iden->node_str();
+        str += iden->toString();
         str += " ";
-        str += type->node_str();
+        str += type->toString();
         return str;
     }
     
-    std::string FunctionDef::node_str() const {
+    std::string FunctionDef::toString() const {
         std::string str = "fn ";
-        str += name->node_str();
+        str += name->toString();
         str += " ( ";
         if(!param.empty()){
          
             for(size_t i = 0; i < param.size(); i++){
-                str += param[i]->node_str();
+                str += param[i]->toString();
                 str += ",";
             }
         }
         str += " ) ";
-        str += retype->node_str();
+        str += retype->toString();
         str += " {\n";
-        str += body->node_str();
+        str += body->toString();
         str += " }\n";
         return str;
     }
 
-    std::string ReturnState::node_str() const {
+    std::string ReturnState::toString() const {
         std::string res = "return ";
 
-        res += ret_val->node_str();
+        res += ret_val->toString();
 
         return res;
     }
     
-    std::string FunctionCall::node_str() const {
+    std::string FunctionCall::toString() const {
         std::string res = "";
 
-        res += name->node_str();
+        res += name->toString();
         res += "(";
 
         for (size_t i = 0; i < args.size(); i++) {
             if (i)
                 res += ", ";
 
-            res += args[i]->node_str();
+            res += args[i]->toString();
         }
 
         res += ")";

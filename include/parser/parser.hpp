@@ -24,7 +24,7 @@ namespace parser{
         AstPtr parseBlockStatement();
         AstPtr parsePointerType();
         AstPtr parseIdentifier();
-        AstPtr parseLitral();
+        AstPtr parseLiteral();
         AstPtr parseParenExpr();
         AstPtr parseType();
         AstPtr parseTypeStatm();

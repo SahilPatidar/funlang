@@ -62,26 +62,26 @@ namespace parser {
     }
 
 
-    AstPtr Parser::parseLitral() {
+    AstPtr Parser::parseLiteral() {
         AstPtr type;
         std::cout<<"entring in litral check "<<toks[cur_index].data<<std::endl;
         switch(cur_token) {
             case INT:
-                type = std::make_shared<NumericLitral>(toks[cur_index]);
+                type = std::make_shared<NumericLiteral>(toks[cur_index]);
                 break;
             case FLOAT:
-                type = std::make_shared<FloatLitral>(toks[cur_index]);
+                type = std::make_shared<FloatLiteral>(toks[cur_index]);
                 break;
             case TRUE:
             case FALSE:
-                type = std::make_shared<BoolLitral>(toks[cur_index]);
+                type = std::make_shared<BoolLiteral>(toks[cur_index]);
                 break;
             case NIL:
-                type = std::make_shared<NullLitral>(toks[cur_index]);
+                type = std::make_shared<NullLiteral>(toks[cur_index]);
                 break;
             case CHAR:
             case STR:
-                type = std::make_shared<StringLitral>(toks[cur_index],(toks[cur_index].tok_type == CHAR?true:false));
+                type = std::make_shared<StringLiteral>(toks[cur_index],(toks[cur_index].tok_type == CHAR?true:false));
                 break;
             default:
                 err::out("expected litral ",toks[cur_index]);
@@ -115,7 +115,7 @@ namespace parser {
     
 
     AstPtr Parser::parseIdentifier() {
-        return std::make_shared<Identifier>(toks[cur_index]);
+        return std::make_shared<Identifier>(toks[cur_index],toks[cur_index].data);
     }
 
     //============------------statement------------================
@@ -334,7 +334,7 @@ namespace parser {
             case NIL:
             case FALSE:
             {
-                left = parseLitral();
+                left = parseLiteral();
                 left = parseSecondryExpr(left,precedence);
                 break;
             }

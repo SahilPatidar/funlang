@@ -2,11 +2,11 @@
 
 namespace analyzer {
     
-    bool Analyzer::valid(const ast::Program& astnode) {
+    bool Analyzer::visit(const ast::Program& astnode) {
         
     }
     
     
     
 
-};
+}
