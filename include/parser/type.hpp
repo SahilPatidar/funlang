@@ -7,22 +7,23 @@ namespace ast{
 
 
 const enum KindType {
-    INTEGER,
-    DECIMAL,
-    STRING,
-    BOOLEAN,
-    POINTER,
-    STRUCT,
-    ARRAY,
-    CONST,
-    FUNCTION,
+    TYPE_INT,
+    TYPE_DECIMAL,
+    TYPE_STRING,
+    TYPE_BOOLEAN,
+    TYPE_POINTER,
+    TYPE_STRUCT,
+    TYPE_ARRAY,
+    TYPE_CONST,
+    TYPE_FUNCTION,
 };
 
 
 class Type{
 public:
  virtual ~Type() = default;
- virtual bool OperatorMatch(Token_type op, const TypePtr type) const;
+ virtual bool OperatorMatch(lex::Token_type op, const TypePtr type) const;
+ virtual bool UnaryOpMatch(lex::Token_type op);
  virtual KindType type() const = 0;
 };
 
@@ -35,8 +36,9 @@ public:
     Int(int size)
     :size(size) {}
     int size() const {return size;}
-    bool OperatorMatch(Token_type op, const TypePtr type);
-    KindType type() const { return INTEGER; }
+    bool OperatorMatch(lex::Token_type op, const TypePtr type);
+    bool UnaryOpMatch(lex::Token_type op);
+    KindType type() const { return TYPE_INT; }
 
 
 };
@@ -53,8 +55,9 @@ public:
     Float(int size)
     :size(size) {}
     int size() const {return size;}
-    bool OperatorMatch(Token_type op, const TypePtr type);
-    KindType type() const { return DECIMAL; }
+    bool OperatorMatch(lex::Token_type op, const TypePtr type);
+    bool UnaryOpMatch(lex::Token_type op);
+    KindType type() const { return TYPE_DECIMAL; }
 
 };
 
@@ -62,24 +65,26 @@ class Bool: public Type {
 private:
 
 public:
-    KindType type() const { return BOOLEAN; }
+    KindType type() const { return TYPE_BOOLEAN; }
+    bool UnaryOpMatch(lex::Token_type op);
 
 };
 
-class ConstType: public Type {
-private:
-    TypePtr type;
+// class ConstType: public Type {
+// private:
+//     TypePtr type;
 
-public:
-    ConstType(TypePtr&_type)
-    :type(_type) {}
+// public:
+//     ConstType(TypePtr&_type)
+//     :type(_type) {}
 
-    TypePtr consType() const {return type;}
-    bool OperatorMatch(Token_type op, const TypePtr type);
-    KindType type() const { return CONST; }
+//     TypePtr consType() const {return type;}
+//     bool OperatorMatch(lex::Token_type op, const TypePtr type);
+//     bool UnaryOpMatch(lex::Token_type op);
+//     KindType type() const { return TYPE_CONST; }
 
 
-};
+// };
 
 class FuncType: public Type {
 private:
@@ -91,8 +96,9 @@ public:
 
     std::vector<TypePtr>paramType() const { return param; }
     TypePtr retType() const { return retype; }
-    bool OperatorMatch(Token_type op, const TypePtr type);
-    KindType type() const { return FUNCTION; }
+    bool OperatorMatch(lex::Token_type op, const TypePtr type);
+    bool UnaryOpMatch(lex::Token_type op);
+    KindType type() const { return TYPE_FUNCTION; }
 
 };
 
@@ -103,36 +109,55 @@ public:
     StructType(std::map<std::string,TypePtr> &_mem) 
     :mem(_mem) {}
 
+    //std::string eleName() const {return name;}
     std::map<std::string,TypePtr>member() const {return mem;}
-    bool OperatorMatch(Token_type op, const TypePtr type);
-    KindType type() const { return STRUCT; }
+    bool contain(std::string name) {
+        if(mem.find(name) != mem.end()){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    bool matchType(std::string name, TypePtr ty) {
+        if(mem[name]->type() == ty->type()){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    bool OperatorMatch(lex::Token_type op, const TypePtr type);
+    bool UnaryOpMatch(lex::Token_type op);
+    KindType type() const { return TYPE_STRUCT; }
 
 
 };
 
-class ArrayType: public Type{
+class Array: public Type{
 private:
 
 public:
 
-    bool OperatorMatch(Token_type op, const TypePtr type);
-    KindType type() const { return ARRAY; }
+    bool OperatorMatch(lex::Token_type op, const TypePtr type);
+    bool UnaryOpMatch(lex::Token_type op);
+    KindType type() const { return TYPE_ARRAY; }
 
 };
 
-class PointerType: public Type{
+class Pointer: public Type{
 private:
     int ptr_size;
     TypePtr base;
 public:
-    PointerType(int &_ptr_size, TypePtr &_base)
+    Pointer(int &_ptr_size, TypePtr &_base)
     :ptr_size(_ptr_size), base(_base) {}
 
     int ptrSize() const {return ptr_size;}
     TypePtr baseType() const {return base;}
-    KindType type() const { return POINTER; }
-    // KindType base_type() const { return base->type(); }
-    bool OperatorMatch(Token_type op, const TypePtr type);
+    KindType type() const { return TYPE_POINTER; }
+    bool UnaryOpMatch(lex::Token_type op);
+    // KindType base_type() const { reTYPE_turn base->type(); }
+    bool OperatorMatch(lex::Token_type op, const TypePtr type);
 
 
 };
@@ -144,6 +169,7 @@ class TypeGenerator{
     static TypePtr Boolean();
     static TypePtr Decimal();
     static TypePtr String();
+    static TypePtr StructTyGen(std::map<std::string, TypePtr>&_ele);
     static TypePtr FuncTypeGenerate(std::vector<TypePtr>&p_type, TypePtr r_type);
     static TypePtr Generate(KindType type);
 };

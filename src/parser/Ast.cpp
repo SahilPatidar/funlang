@@ -113,7 +113,11 @@ namespace ast {
         }
         
         str += " ";
-        str += type->toString();
+        for(int i = 0 ; i < name.size(); i++){
+            if(i)
+                str += ",";
+            str += type[i]->toString();
+        }
         return str;
     }
 
@@ -160,29 +164,26 @@ namespace ast {
     
     std::string ForLoopState::toString() const {
         std::string str = "for ";
-        if(h1)
-         str += h1->toString();
+        str += h1->toString();
     
         str += h2->toString();
 
-        if(h3)
-         str += h3->toString();
+        str += h3->toString();
         str += "{\n";
         str += body->toString();
-        str += "}\n";
+        str += "\n}\n";
         return str;
     }
-    
-    std::string InState::toString() const {
-        std::string str = "for";
-        str += left->toString();
-        str += "in";
-        str += right->toString();
-        str += "{\n";
+
+    std::string For2State::toString() const {
+        std::string str = "for ";
+        str += exp->toString();
+        str += " {\n";
         str += body->toString();
-        str += "}\n";
+        str += "\n}\n";
         return str;
-    }   
+    }
+
     
     std::string IfStatement::toString() const {
         std::string str = "if ";
@@ -280,7 +281,7 @@ namespace ast {
     std::string ReturnState::toString() const {
         std::string res = "return ";
 
-        res += ret_val->toString();
+        res += val->toString();
 
         return res;
     }

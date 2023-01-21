@@ -5,27 +5,32 @@
 
 namespace analyzer{
 
-using TablePtr = std::shared_ptr<Table<TypePtr>>;
 using namespace ast;
+using TablePtr = std::shared_ptr<SymTable<TypePtr>>;
 
 class TypeChecker: public AstVisitor {
 private:
     TablePtr table;
     TypePtr m_type;
-
+    TypePtr retype = NULL;
     std::string identifier(const AstPtr& iden);
+    template<typename T>
+    T dynamicPtrCast(const AstPtr& iden);
+    TablePtr newTable(TablePtr globtable);
+    bool isValid(TypePtr &type, AstPtr &node);
+    bool isValid(const TypePtr &type1, const TypePtr &type2);
     bool visit(const Program& astnode);
     bool visit(const BlockStatement& astnode );
     bool visit(const FunctionDef& astnode );
-    bool visit(const ForLoopState& astnode );
+    bool visit(const WhileLoop& astnode );
+    bool visit(const ForInLoop& astnode );
     bool visit(const StructState& astnode );
     bool visit(const BranchState& astnode );
     bool visit(const ConstState& astnode );
-    bool visit(const FreeState& astnode );
+    bool visit(const Tuple& astnode );
     bool visit(const LetState& astnode );
     bool visit(const IfStatement& astnode );
     bool visit(const ReturnState& astnode );
-    bool visit(const InState& astnode );
     
     bool visit(const BineryExper& astnode );
     bool visit(const AssignmentExpr& astnode );
@@ -33,17 +38,12 @@ private:
     bool visit(const FunctionCall& astnode );
     bool visit(const MemberExpr& astnode );
     bool visit(const IndexExpr& astnode );
-    bool visit(const PostfixExper& astnode );
     bool visit(const PrefixExper& astnode );
-    // bool visit(const Parameter& astnode );
 
-    bool visit(const PointerType& astnode );
+    bool visit(const PointerExpr& astnode );
     bool visit(const ArrayType& astnode ) ;
-    bool visit(const FloatType& astnode );
-    bool visit(const StringType& astnode );
+    bool visit(const PreDefType& astnode );
     bool visit(const Identifier& astnode );
-    bool visit(const IntType& astnode );
-    bool visit(const BoolType& astnode );
 
 
     bool visit(const FloatLiteral& astnode );

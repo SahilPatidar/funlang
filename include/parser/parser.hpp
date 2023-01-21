@@ -2,7 +2,6 @@
 
 #include<iostream>
 #include"Ast.hpp"
-#include<map>
 
 using namespace ast;
 namespace parser{
@@ -11,12 +10,13 @@ namespace parser{
     class Parser {   
         tok_t toks;
         uint cur_index;
-
+        int m_preced = 0;
         // std::string path;
         // std::string file_name;
         Token_type cur_token;
         tokt next_t();
         void next();
+    
         int preced(Token_type op);
         bool BineryOP(Token_type tok);
 
@@ -25,29 +25,30 @@ namespace parser{
         AstPtr parsePointerType();
         AstPtr parseIdentifier();
         AstPtr parseLiteral();
-        AstPtr parseParenExpr();
+        //AstPtr parseParenExpr();
         AstPtr parseType();
         AstPtr parseTypeStatm();
         AstPtr parseArrayType();
         AstPtr parseArrayExpr();
         AstPtr parseArrayAccess(AstPtr left); 
         AstPtr parseFor();
+        AstPtr parseTupleType();
         AstPtr parseDotOrArrow(AstPtr left);
         AstPtr parseAssignment(AstPtr left);
-        AstPtr parseSecondryExpr(AstPtr left,int precedence);
-        AstPtr parsePrimaryExpr(int precedence);
+        AstPtr parseSecondryExpr(AstPtr left);
+        AstPtr parsePrimaryExpr();
         AstPtr parsePostfixExpr(AstPtr left);
         AstPtr parsePrefixExpr();
         AstPtr parseBineryExpr(AstPtr left, int prev_prece);
         AstPtr parseStruct();
-        AstPtr parseStructExpr();
+        AstPtr parseStructExpr(AstPtr left);
         AstPtr parseReturn();
         AstPtr parseIfStatm();
         AstPtr parseConst();
         AstPtr parseStatement();
         AstPtr parseLetStatm();
         AstPtr parseFuncdef();
-        AstPtr parseFuncCall(AstPtr caller_name);
+        AstPtr parseFuncCall(AstPtr sig);
         AstPtr parseTypeValuePair();
         public:
         Parser(tok_t &_toks, int index)

@@ -1,1 +1,11 @@
-(*a).b = 0;
+use x = import("std")
+
+struct person {
+
+};
+
+fn call() (i8,i32) {
+    let c = {as,as,sa};
+    x::func();
+    return ();
+}

@@ -12,14 +12,14 @@ namespace lex
         "null",
         "IDEN",
 
-        "new",
-        "free",
-        "import",
+        "extern",
+        "as",
+        "in",
+        "use",
         "type",
         "const",
         "fn",
         "for",
-        "in",
         "let",
         "return",
         "continue",
@@ -55,8 +55,8 @@ namespace lex
         "/=",
         "%=",
 
-        "++",
-        "--",
+        // "++",
+        // "--",
 
         "&&",
         "||",
@@ -83,10 +83,13 @@ namespace lex
         "<<=",
         ">>=",
 
+        "..",
+
         "->",
         ".",
         ";",
         ":",
+        "::",
         ",",
         "SPC",
         "TAB",
@@ -209,9 +212,9 @@ namespace lex
     
     Token_type get_keyword(std::string &src) {
         if(src == token[FOR])return FOR;
+        if(src == token[EXTERN])return EXTERN;
         if(src == token[IF])return IF;
-        if(src == token[NEW])return NEW;
-        if(src == token[FREE])return FREE;
+        if(src == token[AS])return AS;
         if(src == token[ELSE])return ELSE;
         if(src == token[FN])return FN;
         if(src == token[STRUCT])return STRUCT;
@@ -224,8 +227,9 @@ namespace lex
         if(src == token[FALSE])return FALSE;
         if(src == token[CONST])return CONST;
         if(src == token[LET])return LET;
+        if(src == token[IN])return IN;
         if(src == token[ENUM])return ENUM;
-        if(src == token[IMPORT])return IMPORT;
+        if(src == token[USE])return USE;
         if(src == token[STRING])return STRING;
         if(src == token[BOOL])return BOOL;
         if(src == token[I8])return I8;
@@ -237,7 +241,6 @@ namespace lex
         if(src == token[UI32])return UI32;
         if(src == token[UI64])return UI64;
         if(src == token[F32])return F32;
-        if(src == token[IN])return IN;
         if(src == token[F64])return F64;
 
         return IDEN;
@@ -394,10 +397,11 @@ namespace lex
             case '+':
             {
                 if(i < str_len - 1){
-                    if(NXT == '+'){
-                        ++i;
-                       SET(INC);
-                    }else if(NXT == '='){
+                    // if(NXT == '+'){
+                    //     ++i;
+                    //    SET(INC);
+                    // }else 
+                    if(NXT == '='){
                         ++i;
                         SET(AND_ASSN);
                     }
@@ -407,10 +411,11 @@ namespace lex
             case '-':
              {
                 if(i < str_len - 1){
-                    if(NXT == '-'){
-                        ++i;
-                       SET(DEC);
-                    }else if(NXT == '='){
+                    // if(NXT == '-'){
+                    //     ++i;
+                    //    SET(DEC);
+                    // }else 
+                    if(NXT == '='){
                         ++i;
                        SET(ASSN_SUB);
                     }else if(NXT == '>'){
@@ -554,6 +559,12 @@ namespace lex
                 SET(XOR_OP);
             }
             case ':':
+                if(i < str_len - 1){
+                    if(NXT == ':'){
+                        ++i;
+                        SET(COLCOL);
+                    }
+                }
                 SET(COL);
             case ',':
                 SET(COMMA);
@@ -566,7 +577,16 @@ namespace lex
             case ' ':
                 SET(SPC);
             case '.':
+            {
+                if(i < str_len - 1){
+                    if(NXT == '.'){
+                        ++i;
+                                SET(DOTDOT);
+
+                    }
+                }
                 SET(DOT);
+            }
             case '[':
                 SET(LBRACK);
             case ']':

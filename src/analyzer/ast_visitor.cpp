@@ -35,9 +35,6 @@ void StructState::accept(AstVisitor &visitor) const {
     visitor.visit(*this);
 }
 
-void InState::accept(AstVisitor &visitor) const {
-    visitor.visit(*this);
-}
 
 void ReturnState::accept(AstVisitor &visitor) const {
     visitor.visit(*this);
@@ -50,12 +47,6 @@ void IfStatement::accept(AstVisitor &visitor) const {
 void LetState::accept(AstVisitor &visitor) const {
     visitor.visit(*this);
 }
-
-void FreeState::accept(AstVisitor &visitor) const {
-    visitor.visit(*this);
-}
-
-
 
 
 void BoolLiteral::accept(AstVisitor &visitor) const {
@@ -100,6 +91,10 @@ void PointerType::accept(AstVisitor &visitor) const {
 }
 
 void ListExpr::accept(AstVisitor &visitor) const {
+    visitor.visit(*this);
+}
+
+void Tuple::accept(AstVisitor &visitor) const {
     visitor.visit(*this);
 }
 

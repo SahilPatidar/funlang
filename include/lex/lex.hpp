@@ -16,14 +16,14 @@ namespace lex
         NIL,
         IDEN,
 
-        NEW,
-        FREE,
-        IMPORT,
+        EXTERN,
+        AS,
+        IN,
+        USE,
         TYPE,
         CONST,
         FN,
         FOR,
-        IN,
         LET,
         RETURN,
         CONTINUE,
@@ -59,8 +59,8 @@ namespace lex
         ASSN_DIV,
         ASSN_MOD,
 
-        INC,
-        DEC,
+        // INC,
+        // DEC,
 
         AND,
         OR,
@@ -87,10 +87,13 @@ namespace lex
         LSHIFT_ASSN,
         RSHIFT_ASSN,
 
+        DOTDOT,
+
         ARROW,
         DOT,
         SCOL,
         COL,
+        COLCOL,
         COMMA,
         SPC,
         TAB,
@@ -122,14 +125,7 @@ namespace lex
 
     bool tokenizer(const std::string &src, tok_t &toks, int begin, int end);
     
-     __attribute__((flatten)) inline bool is_unary_op(Token_type tok) {
-        return tok == INC||tok == DEC||tok == ADD|| tok == SUB||
-         tok == MUL|| tok == AND_OP||tok == NOT_OP|| tok == NOT;
-    }
-
-     __attribute__((flatten)) inline bool is_litral_val(Token_type tok) {
-        return tok == INT||tok == STR||tok == CHAR|| tok == FLOAT||tok == TRUE||tok == FALSE;
-    }
+    
 }
 
 
