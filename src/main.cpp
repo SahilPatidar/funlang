@@ -29,11 +29,13 @@ void compile(){
       std::cout<<toks[i].data<<" -> "<<toks[i].tok_type<<std::endl;
    }
 
-   parser::Parser p(toks,in);
+   parser::Parser p(toks,in,in);
    ast::AstPtr tree = p.parse();
 
-
-   std::cout<<" -> "<<tree->toString()<<std::endl;
+   auto t = std::dynamic_pointer_cast<ast::Program>(tree);
+   // std::cout<<std::dynamic_pointer_cast<ast::WhileLoop>(t->statements()[0])->loopbody()->toString()<<std::endl;
+   std::cout<<""<<t->statements().size()<<std::endl;
+   std::cout<<" ->\n "<<tree->toString()<<std::endl;
 
 
 }

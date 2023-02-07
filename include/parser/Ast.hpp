@@ -10,7 +10,7 @@
 using namespace lex;
 namespace ast{
 
-    const enum NodeCategory{
+    enum NodeCategory{
         NODE_BLOCK,
         NODE_TUPLE,
         NODE_USE,
@@ -41,14 +41,13 @@ namespace ast{
         NODE_FN_TYPE,
 
         NODE_IF_STM,
+        NODE_WHILE_STM,
         NODE_IN_STM,
         NODE_TYPE_STM,
         NODE_FOR_STM,
         NODE_CONST_STM,
         NODE_LET_STM,
         NODE_BRANCH_STM,
-        NODE_STRUCT_STM,
-        NODE_LET_STM,
         NODE_STRUCT_STM,
         NODE_NEW_STM,
         NODE_FREE_STM,
@@ -62,10 +61,8 @@ namespace ast{
 
 
     class Ast {
-
     public:
-        virtual ~Ast() = default;
-
+        virtual ~Ast() {} //= default;
         virtual std::string toString() const = 0;
         virtual NodeCategory nodeCategory() const = 0;
         virtual void accept(AstVisitor& visitor) const = 0;
@@ -167,14 +164,14 @@ namespace ast{
         private:
         tokt tok;
         std::string name;
-        TypePtr typeinfo;
+        //TypePtr typeinfo;
         public:
         Identifier(tokt &_tok, std::string &_name)
             :tok(_tok), name(_name){}
 
         tokt token() const { return tok; }
-        TypePtr typeInfo() const { return typeinfo; }
-        void setTypeInfo(TypePtr &type) { typeinfo = type; }
+        // TypePtr typeInfo() const { return typeinfo; }
+        // void setTypeInfo(TypePtr &type) { typeinfo = type; }
         std::string iden() const { return name; }
         std::string toString() const;
         void accept(AstVisitor& visitor) const;
@@ -196,34 +193,34 @@ namespace ast{
     };
     
     
-    class EnumLitral: public Ast {
+    // class EnumLitral: public Ast {
+    //     private:
+    //     tokt tok;
+    //     std::vector<std::pair<AstPtr,AstPtr> >u_data;
+    //     public:
+    //     EnumLitral(tokt &_tok, AstPtr &_var,  std::vector<std::pair<AstPtr,
+    //                 AstPtr> >&_u_data)
+    //     :tok(_tok), u_data(_u_data) 
+    //     {}
+
+    //     tokt token() const{ return tok; }
+    //     std::vector<std::pair<AstPtr,AstPtr> > value() const{return u_data;}
+    //     std::string toString() const;
+        // void accept(AstVisitor& visitor) const;
+        // NodeCategory nodeCategory() const { return NODE_ENUM; }
+    // };
+
+
+    class PreDefineType: public Ast{
         private:
         tokt tok;
-        std::vector<std::pair<AstPtr,AstPtr> >u_data;
+        //TypePtr typeinfo;
         public:
-        EnumLitral(tokt &_tok, AstPtr &_var,  std::vector<std::pair<AstPtr,
-                    AstPtr> >&_u_data)
-        :tok(_tok), u_data(_u_data) 
-        {}
-
-        tokt token() const{ return tok; }
-        std::vector<std::pair<AstPtr,AstPtr> > value() const{return u_data;}
-        std::string toString() const;
-        void accept(AstVisitor& visitor) const;
-        NodeCategory nodeCategory() const { return NODE_ENUM; }
-    };
-
-
-    class PreDefType: public Ast{
-        private:
-        tokt tok;
-        TypePtr typeinfo;
-        public:
-        PreDefType(tokt &_tok)
+        PreDefineType(tokt &_tok)
         : tok(_tok) 
         {}
-        TypePtr setTy(TypePtr ty){typeinfo=ty;}
-        TypePtr getTy()const{return typeinfo;}
+        //TypePtr setTy(TypePtr ty){typeinfo=ty;}
+        //TypePtr getTy()const{return typeinfo;}
         tokt token() const{ return tok; }
         std::string toString() const;
         void accept(AstVisitor& visitor) const;
@@ -277,7 +274,7 @@ namespace ast{
         AstPtr base;
         bool istype;
         public:
-        RefExpr(tokt &tok,Token_type &_op, AstPtr &_type, bool &_istype, bool &_inParen)
+        RefExpr(tokt &tok,Token_type &_op, AstPtr &_type, bool &_istype)
         : tok(tok), op(_op), base(_type), istype(_istype) {}
 
         tokt token() const { return tok; }
@@ -354,39 +351,17 @@ namespace ast{
     };
 
 
-
-
-    class ConstState: public Ast {
-        private:
-        tokt tok;
-        AstPtr name;
-        AstPtr type;
-        AstPtr val;
-        public:
-        ConstState(tokt &_tok, AstPtr &_var, AstPtr &_type, AstPtr &_val)
-        : tok(_tok), name(_var), type(_type), val(_val) {}
-
-        tokt token() const { return tok; }
-        AstPtr vname() const{return name;}
-        AstPtr vartype() const{return type;}
-        AstPtr value() const{return val;}
-        std::string toString() const;
-        void accept(AstVisitor& visitor) const;
-        NodeCategory nodeCategory() const { return NODE_CONST_STM; }
-    };
-
-
     class IndexExpr: public Ast {
         private:
-        AstPtr expr;
+        AstPtr iden;
         std::vector<AstPtr> index;
         
         public:
         IndexExpr(AstPtr expr, std::vector<AstPtr> &_index)
-        :expr(expr),index(_index)
+        :iden(expr),index(_index)
         {}
 
-        AstPtr expression() const{return expr;}
+        AstPtr identifier() const{return iden;}
         std::vector<AstPtr> arry_index() const{return index;}
         std::string toString() const;
         void accept(AstVisitor& visitor) const;
@@ -420,12 +395,30 @@ namespace ast{
         AstPtr block;
         public:
         Extern(tokt &_tok, AstPtr &_lib, AstPtr &_block)
-        :tok(tok), lib(_lib), block(_block) {}
+        :tok(_tok), lib(_lib), block(_block) {}
 
         tokt token() const {return tok;}
         AstPtr externName() const {return lib;}
         AstPtr expression()const {return block;}
-        void accept(AstVisitor &vistitor) const;
+        std::string toString() const;
+        //void accept(AstVisitor &vistitor) const;
+        NodeCategory nodeCategory() const {return NODE_EXTERN;}
+    };
+
+    class Path: public Ast {
+        private:
+        tokt tok;
+        AstPtr owner;
+        AstPtr block;
+        public:
+        Path(tokt &_tok, AstPtr &_lib, AstPtr &_block)
+        :tok(_tok), owner(_lib), block(_block) {}
+
+        tokt token() const {return tok;}
+        AstPtr lexpression() const {return owner;}
+        AstPtr rexpression()const {return block;}
+        std::string toString() const;
+        //void accept(AstVisitor &vistitor) const;
         NodeCategory nodeCategory() const {return NODE_EXTERN;}
     };
 
@@ -457,11 +450,13 @@ namespace ast{
         AstPtr path;
 
     public:
-        Use(tokt &_tok,AstPtr &_path)
+        Use(tokt &_tok, AstPtr &_name, AstPtr &_path)
         : tok(_tok), path(_path) {}
 
-        tokt token() const;
-        AstPtr import_path() const;
+        tokt token() const {return tok;}
+        AstPtr nameof() const {return name;}
+        AstPtr import_path() const {return path;}
+        std::string toString() const;
         void accept(AstVisitor& visitor) const;
          NodeCategory nodeCategory() const { return NODE_USE; }
     };
@@ -472,6 +467,7 @@ namespace ast{
         tokt tok;
         std::vector<AstPtr>tuple;
         bool istype;
+        // bool isEmpty;
     public:
         Tuple(tokt &_tok, std::vector<AstPtr> &_tuple, bool &_isType)
         : tok(_tok), tuple(_tuple), istype(_isType) {}
@@ -479,6 +475,8 @@ namespace ast{
         tokt token() const {return tok;}
         std::vector<AstPtr> tupleEle() const{return tuple;}
         bool isTupleType()const{return istype;}
+        //bool isEmptyTuple()const{return isEmpty;}
+        std::string toString() const;
         void accept(AstVisitor& visitor) const;
         NodeCategory nodeCategory() const { return NODE_TUPLE;}
     };
@@ -662,23 +660,23 @@ namespace ast{
     };
 
 
-    class LetState: public Ast {
+    class VarState: public Ast {
         private:
         tokt tok;
         AstPtr name;
         AstPtr type;
-        TypePtr typeinfo;
+        //TypePtr typeinfo;
         AstPtr val;
         public:
-        LetState(tokt &_tok, AstPtr &_var, AstPtr &_type, AstPtr &_val)
+        VarState(tokt &_tok, AstPtr &_var, AstPtr &_type, AstPtr &_val)
         : tok(_tok), name(_var), type(_type), val(_val) {}
 
         tokt token() const{ return tok; }
         AstPtr varName() const{return name;}
         AstPtr varType() const{return type;}
         AstPtr varVal() const{return val;}
-        TypePtr getType() const {return typeinfo;}
-        void setType(const TypePtr _typeinfo) {typeinfo = _typeinfo;}
+        // TypePtr getType() const {return typeinfo;}
+        // void setType(const TypePtr _typeinfo) {typeinfo = _typeinfo;}
         std::string toString() const;
         void accept(AstVisitor& visitor) const;
         NodeCategory nodeCategory() const { return NODE_LET_STM; }

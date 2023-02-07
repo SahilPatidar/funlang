@@ -1,5 +1,5 @@
 
-#include"../../include/parser/p.hpp"
+#include"../../include/parser/parser.hpp"
 
 namespace parser {
     
@@ -10,20 +10,27 @@ namespace parser {
         }
     }
 
+    void Parser::dump(std::string msg){
+        std::cout<<"step :: "<<"entering in -> "<<msg<<" "<<toks[cur_index].data<<std::endl;
+    }
+    void Parser::dump2(std::string msg){
+        std::cout<<"step :: "<<"returning from -> "<<msg<<" "<<toks[cur_index].data<<std::endl;
+    }
+
     bool Parser::BineryOP(Token_type tok) {
-        return tok == MUL || tok == DIV || tok == MOD ||
-            tok == ADD || tok == SUB || tok == LSHIFT || 
+        return tok == STAR || tok == DIV || tok == MOD ||
+            tok == PLUS || tok == MINUS || tok == LSHIFT || 
             tok == RSHIFT || tok == LT || tok == LEQL || 
             tok == GT ||tok == GEQL || tok == EQL || tok == NEQL ||
             tok == AND || tok == XOR_OP || tok == OR || 
             tok == AND_OP || tok == OR_OP;
     }   
 
-    inline bool Parser::check(Token_type tok) {
+     bool Parser::check(Token_type tok) {
         return cur_token == tok;
     }
 
-    inline bool Parser::checkh(Token_type tok) {
+     bool Parser::checkh(Token_type tok) {
         return next_t().tok_type == tok;
     }
 
@@ -32,27 +39,37 @@ namespace parser {
     }
 
     bool Parser::UnaryOP(Token_type tok) {
-        return tok == ADD|| tok == SUB||
-         tok == MUL|| tok == AND_OP||tok == NOT_OP|| tok == NOT;
+        return tok == PLUS|| tok == MINUS||
+         tok == STAR|| tok == AND_OP||tok == NOT_OP|| tok == NOT;
     }
 
     bool Parser::AssignOP(Token_type tok){
-        
+        return tok == ASSN|| tok == ASSN_DIV||
+         tok == ASSN_MINUS|| tok == ASSN_MOD||tok == ASSN_PLUS|| tok == ASSN_STAR|| 
+         tok == AND_ASSN|| tok == XOR_ASSN||tok == OR_ASSN|| tok == NOT_ASSN;
+    }
+    
+    bool Parser::PreDefType(Token_type tok){
+        return tok == I8 || tok == I16 ||
+         tok == I32 || tok == I64 || tok == UI8 || tok == UI16 ||
+         tok == UI32 || tok == UI64 || tok == F32 || tok == F64 ||
+         tok == STRING || tok == BOOL;
     }
 
     bool Parser::isTerminal(Token_type tok){
-        
+        return tok == RPAREN || tok == COMMA ||
+         tok == RBRACE || tok == RBRACK || tok == COL || tok == SCOL;
     }
 
     int Parser::preced(Token_type op){
         switch (op)
         {
-        case MUL:
+        case STAR:
         case DIV:
         case MOD:
             return 10;
-        case ADD:
-        case SUB:
+        case PLUS:
+        case MINUS:
             return 9;
         case LSHIFT:
         case RSHIFT:
@@ -81,7 +98,7 @@ namespace parser {
         return 0;
     }
 
-    inline bool Parser::isLiteral(Token_type tok) {
+    bool Parser::isLiteral(Token_type tok) {
         return tok == INT||tok == STR||tok == CHAR|| tok == FLOAT||tok == TRUE||tok == FALSE;
     }
 

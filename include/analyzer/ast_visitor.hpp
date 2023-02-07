@@ -12,9 +12,8 @@ class AstVisitor{
     virtual bool visit(const ForInLoop& astnode ){ return false; };
     virtual bool visit(const StructState& astnode ){ return false; }
     virtual bool visit(const BranchState& astnode ){ return false; }
-    virtual bool visit(const ConstState& astnode ){ return false; }
     virtual bool visit(const Tuple& astnode ){ return false; }
-    virtual bool visit(const LetState& astnode ){ return false; }
+    virtual bool visit(const VarState& astnode ){ return false; }
     virtual bool visit(const IfStatement& astnode ){ return false; }
     virtual bool visit(const ReturnState& astnode ){ return false; }
     
@@ -29,7 +28,7 @@ class AstVisitor{
     
     virtual bool visit(const PointerExpr& astnode ){ return false; }
     virtual bool visit(const ArrayType& astnode ) { return false; }
-    virtual bool visit(const PreDefType& astnode ){ return false; }
+    virtual bool visit(const PreDefineType& astnode ){ return false; }
     virtual bool visit(const Identifier& astnode ){ return false; }
     
 

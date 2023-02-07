@@ -230,9 +230,5 @@ CMakeFiles/fun.dir/src/parser/parser.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk/usr/include/c++/v1/vector \
   /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk/usr/include/c++/v1/__split_buffer \
   /Users/sahilpatidar/Desktop/funlang/src/parser/../../include/parser/../lex/lex.hpp \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk/usr/include/c++/v1/map \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk/usr/include/c++/v1/__tree \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk/usr/include/c++/v1/__node_handle \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk/usr/include/c++/v1/optional \
   /Users/sahilpatidar/Desktop/funlang/src/parser/../../include/Error.hpp \
   /Users/sahilpatidar/Desktop/funlang/include/lex/lex.hpp

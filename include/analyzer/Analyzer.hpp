@@ -13,8 +13,7 @@ class Analyzer: public AstVisitor {
     bool visit(const WhileLoop& astnode );
     bool visit(const StructState& astnode );
     bool visit(const BranchState& astnode );
-    bool visit(const ConstState& astnode );
-    bool visit(const LetState& astnode );
+    bool visit(const VarState& astnode );
     bool visit(const IfStatement& astnode );
     bool visit(const ReturnState& astnode );
 
@@ -30,7 +29,7 @@ class Analyzer: public AstVisitor {
     bool visit(const PointerExpr& astnode );
     bool visit(const ArrayType& astnode ) ;
     bool visit(const Tuple& astnode ) ;
-    bool visit(const PreDefType& astnode );
+    bool visit(const PreDefineType& astnode );
     bool visit(const Identifier& astnode );
 
     bool visit(const FloatLiteral& astnode );
