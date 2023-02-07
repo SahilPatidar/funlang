@@ -2,159 +2,304 @@
 #include"../../include/parser/Ast.hpp"
 
 namespace ast {
-
-    Token Program::token() const {
-        return tok;
-    }
-
-    std::vector<AstPtr> Program::statements() const{
-        return statement;
-    }
-
-
-    Token BlockStatement::token() const {
-        return tok;
-    }
-
-    std::vector<AstPtr> BlockStatement::statements() const{
-        return statement;
-    }
-
-    Token IntergerLitral::token() const {
-        return tok;
-    }
     
-    std::string IntergerLitral::value() const {
-        return Int;
-    }
+    std::string Program::toString() const {
+        std::string str = "";
+        std::cout<<statms.size()<<std::endl;
 
-    Token StringLitral::token() const {
-        return tok;
-    }
-
-    std::string StringLitral::value() const {
+        for(auto& statm:statms){
+            str += statm->toString();
+            str += '\n';
+        }
         return str;
     }
 
-    bool StringLitral::ischar() const {
-        return chr;
+    std::string NumericLiteral::toString() const{
+        return tok.data;
     }
 
-    Token BoolLitral::token() const {
-        return tok;
+    std::string FloatLiteral::toString() const{
+        return tok.data;
+    }
+
+    std::string BoolLiteral::toString() const {
+        return tok.data;
+    }
+
+    std::string StringLiteral::toString() const {
+        return tok.data;
+    }
+
+    std::string NullLiteral::toString() const {
+        return tok.data;
+    }
+
+    std::string Identifier::toString() const {
+        return tok.data;
+    }
+
+    std::string BlockStatement::toString() const {
+        std::string str = "";
+        for(auto& statm:statms){
+            str += statm->toString();
+            str += ";\n";
+        }
+        return str;
+    }
+
+    std::string EnumLitral::toString() const {
+        std::string str = "enum ";
+
+        for (size_t i = 0; i < u_data.size(); i++) {
+            if (i)
+                str += "\n";
+
+            str += u_data[i].first->toString();
+            if (u_data[i].second) {
+                str += " = ";
+                str += u_data[i].second->toString();
+            }
+        }
+
+        return str;
+    }
+
+    std::string IntType::toString() const {
+        return tok.data;
     }
     
-    std::string BoolLitral::value() const {
-        return val;
-    }
-
-    Token FloatLitral::token() const {
-        return tok;
-    }
-
-    std::string FloatLitral::value() const {
-        return flt;
-    }
-
-    Token Identifier::token() const {
-        return tok;
-    }
-
-    std::string Identifier::value() const {
-        return id;
-    }
-
-    Token BlockStatement::token() const {
-        return tok;
-    }
-
-    std::vector<AstPtr> BlockStatement::statements() const {
-        return statement;
-    }
-
-    Token EnumLitral::token() const {
-        return tok;
-    }
-
-    Token BineryOp::token() const {
-        return tok;
-    }
-
-    AstPtr BineryOp::leftOpr() const {
-        return left;
-    }
-
-    Token BineryOp::oprator() const {
-        return op;
-    }
-
-    AstPtr BineryOp::rightOpr() const {
-        return right;
-    }
-
-    Token ForLoopState::token() const {
-        return tok;
-    }
-
-    std::vector<AstPtr> ForLoopState::variable() const {
-        return var;
-    }
-
-    AstPtr ForLoopState::loopCondition() const {
-        return condition;
-    }
-
-    AstPtr ForLoopState::loopExpression() const {
-        return expression;
-    }
-
-    AstPtr ForLoopState::loopBody() const {
-        return loopbody;
+    std::string StringType::toString() const {
+        return tok.data;
     }
     
-    Token WhileLoopState::token() const {
-        return tok;
+    std::string FloatType::toString() const {
+        return tok.data;
     }
 
-    AstPtr WhileLoopState::expression() const {
-        return expr;
+    std::string BoolType::toString() const {
+        return tok.data;
     }
 
-    AstPtr WhileLoopState::loopBody() const {
-        return loopbody;
+    std::string TypeState::toString() const {
+        std::string str = "";
+        str += tok.data;
+        str += " ";
+        str += left->toString();
+        str += " ";
+        str += right->toString();
+        str += ";";
+        return str;
     }
 
-    Token IntType::token() const {
-        return tok;
+    std::string ConstState::toString() const {
+        std::string str = "const";
+        str += " ";
+        str += name->toString();
+        str += " ";
+        str += type->toString();
+        str += " = ";
+        str += val->toString();
+        str += ";";
+        return str;
     }
 
-    Token StringType::token() const {
-        return tok;
+    std::string LetState::toString() const {
+        std::string str = "let";
+        str += " ";
+        for(int i = 0 ; i < name.size(); i++){
+            if(i)
+                str += ",";
+            str += name[i]->toString();
+        }
+        
+        str += " ";
+        for(int i = 0 ; i < name.size(); i++){
+            if(i)
+                str += ",";
+            str += type[i]->toString();
+        }
+        return str;
     }
 
-    Token BoolType::token() const {
-        return tok;
+    std::string ArrayType::toString() const {
+        std::string str = "[";
+        str += size->toString();
+        str += "]";
+        str += type->toString();
+        return str;
     }
 
-    Token FloatType::token() const {
-        return tok;
-    }
-
-    Token ConstExpr::token() const {
-        return tok;
-    }
-
-    AstPtr ConstExpr::vname() const {
-        return varname;
-    }
-
-    AstPtr ConstExpr::vartype() const {
-        return type;
-    }
-
-    AstPtr ConstExpr::value() const {
-        return val;
+    std::string IndexExpr::toString() const {
+        std::string str = "";
+        str += expr->toString();
+        str += "[";
+        str += index->toString();
+        str += "]";
+        return str;
     }
     
+    std::string BineryExper::toString() const {
+        std::string str = "";
+        str += " (-> ";
+        str += left->toString();
+        str += lex::token[op];
+        str += right->toString();
+        str += " <-) ";
+        return str;
+    }
+    
+    std::string PrefixExper::toString() const {
+        std::string str = "";
+        str += lex::token[op];
+        str += var->toString();
+        return str;
+    }
+    
+    std::string PostfixExper::toString() const {
+        std::string str = "";
+        str += lex::token[op];
+        str += var->toString();
+        return str;
+    }
+    
+    std::string ForLoopState::toString() const {
+        std::string str = "for ";
+        str += h1->toString();
+    
+        str += h2->toString();
+
+        str += h3->toString();
+        str += "{\n";
+        str += body->toString();
+        str += "\n}\n";
+        return str;
+    }
+
+    std::string For2State::toString() const {
+        std::string str = "for ";
+        str += exp->toString();
+        str += " {\n";
+        str += body->toString();
+        str += "\n}\n";
+        return str;
+    }
+
+    
+    std::string IfStatement::toString() const {
+        std::string str = "if ";
+        str += cond->toString();
+        str += " {\n";
+        str +=  ifbody->toString();
+        str += " } ";
+        if(elbody){
+            str += "else ";
+            str += " {\n";
+            str += elbody->toString();
+            str += " }";
+        }
+        return str + "\n";
+    }
+    
+    std::string PointerType::toString() const {
+        std::string str = "*";
+        str += base->toString();
+        return str;
+    }
+    
+    std::string BranchState::toString() const {
+        return tok.data + ";\n";
+    }
+    
+    std::string MemberExpr::toString() const {
+        std::string str = "";
+        str += left->toString();
+        if(mem_op == DOT)
+            str += ".";
+        else
+            str += "->";
+        str += right->toString();
+        return str;
+    }
+    
+    std::string StructState::toString() const {
+        std::string str = "struct";
+        str += "{";
+        for(int i = 0 ; i < elemt.size(); i++){
+            str += elemt[i]->toString();
+            str += ";\n";
+        }
+        str += "};";
+        return str;
+    }
+    
+    std::string ListExpr::toString() const {
+        std::string str = " { ";
+        for(int i = 0 ; i < list.size(); i++){
+            str += list[i]->toString();
+            str += ",";
+        }
+        str += " };\n";
+        return str;
+    }
+    
+    std::string AssignmentExpr::toString() const {
+        std::string str = "";
+        str += left->toString();
+        str += " = ";
+        str += right->toString();
+        str += ";\n";
+        return str;
+    }
+    
+    std::string Parameter::toString() const {
+        std::string str = "";
+        str += iden->toString();
+        str += " ";
+        str += type->toString();
+        return str;
+    }
+    
+    std::string FunctionDef::toString() const {
+        std::string str = "fn ";
+        str += name->toString();
+        str += " ( ";
+        if(!param.empty()){
+         
+            for(size_t i = 0; i < param.size(); i++){
+                str += param[i]->toString();
+                str += ",";
+            }
+        }
+        str += " ) ";
+        str += retype->toString();
+        str += " {\n";
+        str += body->toString();
+        str += " }\n";
+        return str;
+    }
+
+    std::string ReturnState::toString() const {
+        std::string res = "return ";
+
+        res += val->toString();
+
+        return res;
+    }
+    
+    std::string FunctionCall::toString() const {
+        std::string res = "";
+
+        res += name->toString();
+        res += "(";
+
+        for (size_t i = 0; i < args.size(); i++) {
+            if (i)
+                res += ", ";
+
+            res += args[i]->toString();
+        }
+
+        res += ")";
+        return res;
+    }
 }
-

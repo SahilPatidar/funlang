@@ -1,10 +1,11 @@
-io = import(std)
+use x = import("std")
 
-fn main() i32 {
-    var a string;
-    var d = 232;
-    io.print(call);
-    return 0;
+struct person {
+
+};
+
+fn call() (i8,i32) {
+    let c = {as,as,sa};
+    x::func();
+    return ();
 }
-
-

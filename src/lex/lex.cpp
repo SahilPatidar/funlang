@@ -9,23 +9,24 @@ namespace lex
         "STR",
         "CHAR",
         "FLOAT",
+        "null",
         "IDEN",
 
-        "import",
+        "extern",
+        "as",
+        "in",
+        "use",
         "type",
         "const",
         "fn",
         "for",
-        "var",
-        "while",
+        "let",
         "return",
         "continue",
         "break",
-        "nil",
         "true",
         "false",
         "if",
-        "elif",
         "else",
         "struct",
         "enum",
@@ -54,10 +55,8 @@ namespace lex
         "/=",
         "%=",
 
-        "x++",
-        "x--",
-        "++x",
-        "--x",
+        // "++",
+        // "--",
 
         "&&",
         "||",
@@ -84,10 +83,13 @@ namespace lex
         "<<=",
         ">>=",
 
+        "..",
+
         "->",
         ".",
         ";",
         ":",
+        "::",
         ",",
         "SPC",
         "TAB",
@@ -159,15 +161,17 @@ namespace lex
             if(CUR == '/'&& NXT == '/'){
                 comment_line = true;
                 i++;
+                continue;
             }
+            if(isalpha(src[i])&&!isalnum(PRV)&&!isalnum(PRV)&&PRV != '\''&&PRV != '\"'&&PRV!=')') {
 
-            if(isalpha(src[i])&&!isalnum(PRV)&&PRV != '\''&&PRV != '\"'&&PRV!=']'&&PRV!=')') {
                 std::string str = get_string(src, i);
+
                 if(str == ""){
                     return false;
                 }
                 Token_type tok_name = get_keyword(str);
-                toks.push_back(tok(line, i - line_start - start_pos, str, tok_name));
+                toks.push_back(tokt(line, i - line_start - start_pos, str, tok_name));
                 continue;
             }
 
@@ -179,7 +183,7 @@ namespace lex
                     printf("error: number\n");
                     return false;
                 }
-                toks.push_back(tok(line, i - line_start - start_pos, str ,type));
+                toks.push_back(tokt(line, i - line_start - start_pos, str ,type));
                 continue;
 
             }
@@ -191,26 +195,28 @@ namespace lex
                     printf("error in const string %d\n",i);
                     return false;
                 }
-                toks.push_back(tok(line, i - line_start - start_pos, str, quote=='\"'?STR:CHAR));
+                toks.push_back(tokt(line, i - line_start - start_pos, str, quote=='\"'?STR:CHAR));
                 continue;
             }
             Token_type type = INVALID;
             if(get_operator(src, type, i)){
-                toks.push_back(tok(line, i - line_start - start_pos, token[type], type));
+                toks.push_back(tokt(line, i - line_start - start_pos, token[type], type));
                 continue;
             }
+            std::cout<<"error :: expected token "<<src[i]<<std::endl;
+            exit(1);
         }
-        toks.push_back(tok(line, i - line_start - start_pos, token[FEOF], FEOF));
+        toks.push_back(tokt(line, i - line_start - start_pos, token[FEOF], FEOF));
         return true;
     }
     
     Token_type get_keyword(std::string &src) {
         if(src == token[FOR])return FOR;
+        if(src == token[EXTERN])return EXTERN;
         if(src == token[IF])return IF;
-        if(src == token[ELIF])return ELIF;
+        if(src == token[AS])return AS;
         if(src == token[ELSE])return ELSE;
         if(src == token[FN])return FN;
-        if(src == token[WHILE])return WHILE;
         if(src == token[STRUCT])return STRUCT;
         if(src == token[NIL])return NIL;
         if(src == token[CONTINUE])return CONTINUE;
@@ -220,10 +226,10 @@ namespace lex
         if(src == token[RETURN])return RETURN;
         if(src == token[FALSE])return FALSE;
         if(src == token[CONST])return CONST;
-        if(src == token[VAR])return VAR;
+        if(src == token[LET])return LET;
+        if(src == token[IN])return IN;
         if(src == token[ENUM])return ENUM;
-        if(src == token[STRUCT])return STRUCT;
-        if(src == token[IMPORT])return IMPORT;
+        if(src == token[USE])return USE;
         if(src == token[STRING])return STRING;
         if(src == token[BOOL])return BOOL;
         if(src == token[I8])return I8;
@@ -236,6 +242,7 @@ namespace lex
         if(src == token[UI64])return UI64;
         if(src == token[F32])return F32;
         if(src == token[F64])return F64;
+
         return IDEN;
     }
 
@@ -390,10 +397,11 @@ namespace lex
             case '+':
             {
                 if(i < str_len - 1){
-                    if(NXT == '+'){
-                        ++i;
-                       SET(V_INC);
-                    }else if(NXT == '='){
+                    // if(NXT == '+'){
+                    //     ++i;
+                    //    SET(INC);
+                    // }else 
+                    if(NXT == '='){
                         ++i;
                         SET(AND_ASSN);
                     }
@@ -403,10 +411,11 @@ namespace lex
             case '-':
              {
                 if(i < str_len - 1){
-                    if(NXT == '-'){
-                        ++i;
-                       SET(V_DEC);
-                    }else if(NXT == '='){
+                    // if(NXT == '-'){
+                    //     ++i;
+                    //    SET(DEC);
+                    // }else 
+                    if(NXT == '='){
                         ++i;
                        SET(ASSN_SUB);
                     }else if(NXT == '>'){
@@ -497,10 +506,10 @@ namespace lex
                 if(i < str_len - 1){
                     if(NXT == '='){
                         ++i;
-                        SET(COMP_ASSN);
+                        SET(NOT_ASSN);
                     }
                 }
-                SET(COMP_OP);
+                SET(NOT_OP);
             }
             case '<':
             {
@@ -550,6 +559,12 @@ namespace lex
                 SET(XOR_OP);
             }
             case ':':
+                if(i < str_len - 1){
+                    if(NXT == ':'){
+                        ++i;
+                        SET(COLCOL);
+                    }
+                }
                 SET(COL);
             case ',':
                 SET(COMMA);
@@ -562,19 +577,28 @@ namespace lex
             case ' ':
                 SET(SPC);
             case '.':
+            {
+                if(i < str_len - 1){
+                    if(NXT == '.'){
+                        ++i;
+                                SET(DOTDOT);
+
+                    }
+                }
                 SET(DOT);
+            }
             case '[':
                 SET(LBRACK);
             case ']':
                 SET(RBRACK);
             case '(':
-                SET(LBRACE);
-            case ')':
-                SET(RBRACE);
-            case '{':
                 SET(LPAREN);
-            case '}':
+            case ')':
                 SET(RPAREN);
+            case '{':
+                SET(LBRACE);
+            case '}':
+                SET(RBRACE);
 
 
             default:
