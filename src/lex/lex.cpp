@@ -13,6 +13,7 @@ namespace lex
         "IDEN",
 
         "extern",
+        "while",
         "as",
         "in",
         "use",
@@ -171,7 +172,7 @@ namespace lex
                     return false;
                 }
                 Token_type tok_name = get_keyword(str);
-                toks.push_back(tokt(line, i - line_start - start_pos, str, tok_name));
+                toks.push_back(tokt(line, i - line_start, str, tok_name));
                 continue;
             }
 
@@ -183,7 +184,7 @@ namespace lex
                     printf("error: number\n");
                     return false;
                 }
-                toks.push_back(tokt(line, i - line_start - start_pos, str ,type));
+                toks.push_back(tokt(line, i - line_start, str ,type));
                 continue;
 
             }
@@ -195,24 +196,25 @@ namespace lex
                     printf("error in const string %d\n",i);
                     return false;
                 }
-                toks.push_back(tokt(line, i - line_start - start_pos, str, quote=='\"'?STR:CHAR));
+                toks.push_back(tokt(line, i - line_start , str, quote=='\"'?STR:CHAR));
                 continue;
             }
             Token_type type = INVALID;
             if(get_operator(src, type, i)){
-                toks.push_back(tokt(line, i - line_start - start_pos, token[type], type));
+                toks.push_back(tokt(line, i - line_start, token[type], type));
                 continue;
             }
             std::cout<<"error :: expected token "<<src[i]<<std::endl;
             exit(1);
         }
-        toks.push_back(tokt(line, i - line_start - start_pos, token[FEOF], FEOF));
+        toks.push_back(tokt(line, i - line_start , token[FEOF], FEOF));
         return true;
     }
     
     Token_type get_keyword(std::string &src) {
         if(src == token[FOR])return FOR;
         if(src == token[EXTERN])return EXTERN;
+        if(src == token[WHILE])return WHILE;
         if(src == token[IF])return IF;
         if(src == token[AS])return AS;
         if(src == token[ELSE])return ELSE;
@@ -403,10 +405,10 @@ namespace lex
                     // }else 
                     if(NXT == '='){
                         ++i;
-                        SET(AND_ASSN);
+                        SET(ASSN_PLUS);
                     }
                 }
-               SET(ADD);
+               SET(PLUS);
             }
             case '-':
              {
@@ -417,13 +419,13 @@ namespace lex
                     // }else 
                     if(NXT == '='){
                         ++i;
-                       SET(ASSN_SUB);
+                       SET(ASSN_MINUS);
                     }else if(NXT == '>'){
                         ++i;
                         SET(ARROW);
                     }
                 }
-                SET(SUB);
+                SET(MINUS);
             }
             case '%':
             {
@@ -440,10 +442,10 @@ namespace lex
                 if(i < str_len - 1){
                     if(NXT == '='){
                         ++i;
-                        SET(ASSN_MUL);
+                        SET(ASSN_STAR);
                     }
                 }
-                SET(MUL);
+                SET(STAR);
             }
             case '=':
             {

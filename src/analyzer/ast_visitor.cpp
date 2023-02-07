@@ -15,7 +15,7 @@ void BlockStatement::accept(AstVisitor &visitor) const {
     }
 }
 
-void ForLoopState::accept(AstVisitor &visitor) const {
+void ForInLoop::accept(AstVisitor &visitor) const {
     visitor.visit(*this);
 }
 
@@ -23,7 +23,7 @@ void FunctionDef::accept(AstVisitor &visitor) const {
     visitor.visit(*this);
 }
 
-void ConstState::accept(AstVisitor &visitor) const {
+void VarState::accept(AstVisitor &visitor) const {
     visitor.visit(*this);
 }
 
@@ -41,10 +41,6 @@ void ReturnState::accept(AstVisitor &visitor) const {
 }
 
 void IfStatement::accept(AstVisitor &visitor) const {
-    visitor.visit(*this);
-}
-
-void LetState::accept(AstVisitor &visitor) const {
     visitor.visit(*this);
 }
 
@@ -78,15 +74,12 @@ void AssignmentExpr::accept(AstVisitor &visitor) const {
     visitor.visit(*this);
 }
 
-void PostfixExper::accept(AstVisitor &visitor) const {
-    visitor.visit(*this);
-}
 
 void PrefixExper::accept(AstVisitor &visitor) const {
     visitor.visit(*this);
 }
 
-void PointerType::accept(AstVisitor &visitor) const {
+void PointerExpr::accept(AstVisitor &visitor) const {
     visitor.visit(*this);
 }
 
@@ -120,19 +113,7 @@ void ArrayType::accept(AstVisitor &visitor) const {
     visitor.visit(*this);
 }
 
-void IntType::accept(AstVisitor &visitor) const {
-    visitor.visit(*this);
-}
-
-void BoolType::accept(AstVisitor &visitor) const {
-    visitor.visit(*this);
-}
-
-void FloatType::accept(AstVisitor &visitor) const {
-    visitor.visit(*this);
-}
-
-void StringType::accept(AstVisitor &visitor) const {
+void PreDefType::accept(AstVisitor &visitor) const {
     visitor.visit(*this);
 }
 

@@ -9,7 +9,7 @@
 					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
 					"minimumCMakeVersion" : 
 					{
-						"string" : "3.10"
+						"string" : "3.25.1"
 					},
 					"projectIndex" : 0,
 					"source" : ".",
@@ -39,7 +39,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "fun::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-fun-Debug-39925d1476f8b09a8b97.json",
+					"jsonFile" : "target-fun-Debug-fd921a8993ff5fcf56b9.json",
 					"name" : "fun",
 					"projectIndex" : 0
 				}

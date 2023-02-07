@@ -6,24 +6,162 @@ namespace parser {
         std::vector<AstPtr>statms;
         tokt tok = toks[cur_index];
         cur_token = toks[cur_index].tok_type;
-        while(cur_token != FEOF){
+        while(!check(FEOF)){
             AstPtr statm;
             m_preced = 0;
-            std::cout<<"statmen starting "<<toks[cur_index].data<<std::endl;
-            statm = parseStatement();
-            statms.push_back(statm);
-            if(cur_token == SCOL)
-                next();
+            if(parseStatement()){
+                std::cout<<"yes"<<std::endl;
+                statms.push_back(m_node);
+            }else{
+                break;
+            }
         }
+        dump2(__func__);
         return std::make_shared<Program>(tok,statms);
     }
 
 
-
-    AstPtr Parser::parseType() {
-        AstPtr type;
-        std::cout<<"entring in type check "<<toks[cur_index].data<<std::endl;
+    bool Parser::parseStatement() {
+        dump(__func__);
+        std::cout<<toks[cur_index].data<<std::endl;
         switch(cur_token){
+            case FOR:
+                if(!parseFor()){
+                    return false;
+                }
+                break;
+            case WHILE:
+                if(!parseWhile()){
+                    return false;
+                }
+                break;
+
+            case IF:
+                if(!parseIfStatm()){
+                    return false;
+                }
+                break;
+
+            case LET:
+                if(!parseLetStatm()){
+                    return false;
+                }
+                break;
+
+            case RETURN:
+                if(!parseReturn()){
+                    return false;
+                }
+                break;
+
+            case CONTINUE:
+            case BREAK:
+                m_node = std::make_shared<BranchState>(toks[cur_index]);
+                next();
+                break;
+
+            case CONST:
+                if(!parseConst()){
+                    return false;
+                }
+                break;
+
+
+            case STRUCT:
+                if(!parseStruct()){
+                    return false;
+                }
+                break;
+
+            // case ENUM:
+
+            //     break;
+
+            case FN:
+                if(!parseFuncdef()){
+                    return false;
+                }
+                break;
+            case TYPE:
+                if(!parseTypeStatm()){
+                    return false;
+                }
+                break;
+            case EXTERN:
+                if(!parseExtern()){
+                    return false;
+                }
+                break;
+            case USE:
+                if(!parseUseStatm()){
+                    return false;
+                }
+            default:
+                if(!parseSemiConsumedExpr()){
+                    return false;
+                }
+                break;
+        }
+                dump2(__func__);
+
+        return true;
+    }
+
+    bool Parser::parseUseStatm() {
+        
+        return true;
+    }
+
+    bool Parser::parseExtern() {
+        dump2(__func__);
+
+        tokt tok = toks[cur_index];
+        AstPtr lib;
+        AstPtr block;
+        next();
+        if(!check(STR)){
+            err::out("expected 'string' found -> ",toks[cur_index]);
+            return false;
+        }
+        if(parseLiteral()){
+            lib = m_node;
+        }
+        if(!parseStatement()){
+            err::out("expected Statement expression found -> ",toks[cur_index]);
+            return false;
+        }
+        block = m_node;
+        m_node = std::make_shared<Extern>(tok,lib,block);
+        dump2(__func__);
+
+        return true;
+    }
+
+    bool Parser::parseIdentifier() {
+        dump(__func__);
+
+        if(!check(IDEN)){
+            err::out("expected 'identifier' found -> ",toks[cur_index]);
+            return false;
+        }else{
+            m_node = std::make_shared<Identifier>(toks[cur_index],toks[cur_index].data);
+        }
+        next();
+                dump2(__func__);
+
+        return true;
+    }
+
+
+    bool Parser::parseType() {
+        //AstPtr type;
+        dump(__func__);
+        switch(cur_token){
+            case LBRACK:
+                if(!parseArrayType()){
+                    return false;
+                }
+                break;
             case I8:
             case I16:
             case I32:
@@ -32,986 +170,1445 @@ namespace parser {
             case UI16:
             case UI32:
             case UI64:
-                type = std::make_shared<IntType>(toks[cur_index]);
-                next();
-                break;
             case F32:
             case F64:
-                type = std::make_shared<FloatType>(toks[cur_index]);
-                next();
-                break;
             case STRING:
-                type = std::make_shared<StringType>(toks[cur_index]);
-                next();
-                break;
             case BOOL:
-                type = std::make_shared<BoolType>(toks[cur_index]);
+                m_node = std::make_shared<PreDefineType>(toks[cur_index]);
                 next();
-                break;
-            case LBRACK:
-                type = parseArrayType(); 
                 break;
             case LPAREN:
-                type = parseTupleType(); 
-                break;
-            case STRUCT:
-                type = parseStruct();
-                break;
-            case IDEN:
-                type = parsePrimaryExpr();
-                break;
-            case MUL:
-                type = parsePointerType();
-                break;
-            default:
-                err::out("expected Type ",toks[cur_index]);
-        }
-        return type;
-    }
-
-
-    AstPtr Parser::parseLiteral() {
-        AstPtr type;
-        std::cout<<"entring in litral check "<<toks[cur_index].data<<std::endl;
-        switch(cur_token) {
-            case INT:
-                type = std::make_shared<NumericLiteral>(toks[cur_index]);
-                break;
-            case FLOAT:
-                type = std::make_shared<FloatLiteral>(toks[cur_index]);
-                break;
-            case TRUE:
-            case FALSE:
-                type = std::make_shared<BoolLiteral>(toks[cur_index]);
-                break;
-            case NIL:
-                type = std::make_shared<NullLiteral>(toks[cur_index]);
-                break;
-            case CHAR:
-            case STR:
-                type = std::make_shared<StringLiteral>(toks[cur_index],(toks[cur_index].tok_type == CHAR?true:false));
-                break;
-            default:
-                err::out("expected litral ",toks[cur_index]);
-
-        }
-        next();
-        return type;
-    }
-
-
-
-    AstPtr Parser::parseArrayType() {
-        AstPtr len, type;
-        tokt tok = toks[cur_index];
-
-        next();
-        if(cur_token == RBRACK){
-            err::out("expected array type ",toks[cur_index]);
-        } else {
-            len = parsePrimaryExpr();
-        }
-        if(cur_token != RBRACK){
-            err::out("expected array type ",toks[cur_index]);
-        }
-        next();
-        type = parseType();
-                    
-        return std::make_shared<ArrayType>(tok, len, type);
-    }
-
-
-    AstPtr Parser::parseTupleType() {
-        tokt tok = toks[cur_index];
-        std::vector<AstPtr>types;
-        if(cur_token == LPAREN){
-            err::out("expected tuple type ",toks[cur_index]);
-        }
-
-        if(next_t().tok_type != RPAREN){
-            do{
-                next();
-                AstPtr t;
-                t = parseType();
-                next();
-                types.push_back(t);
-            }while(cur_token == COMMA);
-        }
-        if(cur_token != RPAREN){
-            err::out("expected tuple type ",toks[cur_index]);
-        }
-        next();
-        return std::make_shared<Tuple>(tok, types);
-    }
-    
-
-    AstPtr Parser::parseIdentifier() {
-        return std::make_shared<Identifier>(toks[cur_index],toks[cur_index].data);
-    }
-
-    //============------------statement------------================
-
-    AstPtr Parser::parseStatement() {
-        std::cout<<"step :: entering statement checker "<<toks[cur_index].data<<std::endl;
-        AstPtr statm;
-        switch(cur_token){
-            case FOR:
-                statm = parseFor();
-                break;
-
-            case IF:
-                statm = parseIfStatm();
-                break;
-
-            case LET:
-                statm = parseLetStatm();
-                break;
-
-            case RETURN:
-                statm = parseReturn();
-                break;
-
-            case CONTINUE:
-            case BREAK:
-                statm = std::make_shared<BranchState>(toks[cur_index]);
-                break;
-
-            case CONST:
-                statm = parseConst();
-                break;
-
-
-            case STRUCT:
-                statm = parseStruct();
-                break;
-
-            // case ENUM:
-            //     statm = parseEnum();
-            //     break;
-
-            case FN:
-                statm = parseFuncdef();
-                break;
-            case TYPE:
-                statm = parseTypeStatm();
-                break;
-            case USE:
-            default:
-                statm = parsePrimaryExpr();
-                if(!statm){
-                    err::out("expected statment checker ",toks[cur_index]); 
-                    next();
+                if(!parseTupleType()){
+                    return false;
                 }
                 break;
-        }
-        return statm;
-    }
-
-    AstPtr Parser::parseBlockStatement() {
-        int lpos, rpos;
-        std::vector<AstPtr> statms;
-        
-        if(cur_token != LBRACE){
-            err::out("expected Block 1",toks[cur_index]);
-        }
-
-        if(next_t().tok_type != RBRACE){
-            do {
+            case DOTDOT:
+                m_node = std::make_shared<Variadic>(toks[cur_index]);
+                break;
+            case FN:
+            {
+                tokt tok = toks[cur_index];
                 next();
-
-                AstPtr statm;
-                
-                statm = parseStatement();
-                
-                statms.push_back(statm);
-            
-            } while(cur_token != RBRACE);
-        }else{
-            next();
-        }
-        
-        if(cur_token != RBRACE){
-            err::out("expected Block 2",toks[cur_index]); 
-        }       
-        rpos = cur_index;
-        next();
-        return std::make_shared<BlockStatement>(lpos, statms, rpos);
-    }
-
-
-    AstPtr Parser::parseTypeStatm() {
-        tokt tok = toks[cur_index];
-        if(cur_token != TYPE){
-            err::out(" expected Type state ", toks[cur_index]);     
-        }
-        next();
-        if(cur_token != IDEN){
-            err::out(" expected Type iden ", toks[cur_index]);     
-        }
-        AstPtr left = parseIdentifier();
-        
-        next();
-
-        AstPtr right = parseType();
-
-        return std::make_shared<TypeState>(tok, left, right);
-
-    }
-             
-
-    AstPtr Parser::parsePointerType(){
-        tokt tok = toks[cur_index];
-        Token_type op = cur_token;
-        AstPtr base;
-        next();
-        parseType();
-        std::cout<<"returning "<<toks[cur_index].data<<std::endl;
-        return std::make_shared<PointerType>(tok, op, base);
-    }
-
-
-    AstPtr Parser::parsePrefixExpr(){
-        Token_type op = cur_token;
-        tokt tok = toks[cur_index];
-        std::cout<<"prefix expr "<<toks[cur_index].data<<std::endl;
-        next();
-        AstPtr expr = parsePrimaryExpr();
-        return std::make_shared<PrefixExper>(tok,expr,op);
-    }
-
-
-    AstPtr Parser::parseArrayExpr() {
-        tokt tok = toks[cur_index];
-
-        std::vector<AstPtr>vals;
-        std::cout<<"entering array exper "<<toks[cur_index].data<<std::endl;
-        
-        if(cur_token != RBRACK) {
-            
-            do { 
-                next();   
-                AstPtr ele;
-                ele = parsePrimaryExpr();
-                vals.push_back(ele);
-                std::cout<<"after 1 "<<toks[cur_index].data<<std::endl;
-            }while(cur_token == COMMA);
-
-        } else {
-            err::out("expected array exper ",toks[cur_index]);
-        }
-
-        if(cur_token != RBRACK){
-            err::out("expected array ] exper ",toks[cur_index]);
-        }
-
-        next();
-            std::cout<<"return array exper  "<<toks[cur_index].data<<std::endl;
-        return std::make_shared<ListExpr>(tok,vals);
-    }
-
-
-    // lval opr rval
-
-    AstPtr Parser::parsePrimaryExpr(){
-        AstPtr left;
-        switch(cur_token){
-            case IDEN:
-            {   
-                left = parseIdentifier();
-                next();
-                switch(cur_token){
-                    case COL:
-                    {
+                if(!check(LPAREN)){
+                    err::out("expected '{' found -> ",toks[cur_index]);
+                    return false;
+                }else{
+                    next();
+                    std::vector<AstPtr>ty;
+                    while(!check(RPAREN)){
+                        if(!parseType()) {
+                            return false;
+                        }
+                        ty.push_back(m_node);
+                        if(check(RPAREN)){
+                            break;
+                        }
+                        if(!check(COMMA)) {
+                            err::out("expected ',' found -> ",toks[cur_index]);
+                            return false;
+                        }
                         next();
-                        if(cur_token == COL){
-                            
+                    }
+                    if(!check(RPAREN)) {
+                        err::out("expected ')' found -> ",toks[cur_index]);
+                        return false;
+                    }
+                    next();
+                    AstPtr ret;
+                    if(check(ARROW)){
+                        if(parseType()){
+                            ret = m_node;
                         }
                     }
-                    case LPAREN:
-                        left = parseFuncCall(left);
-                    case DOT:
-                    case ARROW:
-                        left = parseDotOrArrow(left);
-                    case LBRACK:
-                        left = parseArrayAccess(left);
-                    case LBRACE:
-                        left = parseStructExpr(left);
-                    default:
-                        left = parseSecondryExpr(left);
+                    m_node = std::make_shared<FunType>(tok, ty, ret);
+
                 }
-                break;
             }
-            case MUL: 
-            case ADD:
-            case SUB:
-            case AND_OP:
-            case NOT: 
-            case NOT_OP:
+                break;
+            case IDEN:
+                if(!parseExpr()){
+                    return false;
+                }
+                //type = m_node;
+                break;
+            case STAR:
             {
-                left = parsePrefixExpr();
+                bool isType  = true;
+                tokt tok  = toks[cur_index];
+                Token_type op = cur_token;
+                next();
+                if(!parseType()){
+                    return false;
+                }
+                m_node = std::make_shared<PointerExpr>(tok,m_node,isType);
+            }
+                break;
+            case AND_OP:
+            {
+                tokt tok = toks[cur_index];
+                Token_type op = cur_token;
+                AstPtr type;
+                bool istype = false;
+                next();
+                if(check(AND)) {
+                    err::out("expected expression invalid",toks[cur_index]);
+                    return false;
+                }
+                if(parseType()){
+                    type = m_node;
+                }
+                m_node = std::make_shared<RefExpr>(tok,op,type,istype);
                 break;
             }
-            case STR:
+            default:
+                err::out("expected expression found ->",toks[cur_index]);
+                return false;
+        }
+                dump2(__func__);
+
+        //m_node = type;
+        return true;
+    }
+
+
+
+    bool Parser::parseLiteral() {
+        dump(__func__);
+        switch(cur_token) {
             case INT:
+                m_node = std::make_shared<NumericLiteral>(toks[cur_index]);
+                break;
             case FLOAT:
-            case CHAR:
+                m_node = std::make_shared<FloatLiteral>(toks[cur_index]);
+                break;
             case TRUE:
-            case NIL:
             case FALSE:
-            {
-                left = parseLiteral();
-                left = parseSecondryExpr(left);
+                m_node = std::make_shared<BoolLiteral>(toks[cur_index]);
                 break;
-            }
-            case LPAREN:
-            {
-                next();
-                std::cout<<"step :: entering paren exper "<<toks[cur_index].data<<std::endl;
-                int old = m_preced;
-                m_preced = 0;
-                left = parsePrimaryExpr();
-                if(cur_token == COMMA) {
-                    tokt tok = toks[cur_index];
-                    std::vector<AstPtr>vals;
-                    std::cout<<"entering tuple exper "<<toks[cur_index].data<<std::endl;
-                    vals.push_back(left);
-                    if(cur_token != RPAREN) {
-                        
-                        do { 
-                            next();   
-                            AstPtr ele;
-                            ele = parsePrimaryExpr();
-                            vals.push_back(ele);
-                            std::cout<<"after 1 "<<toks[cur_index].data<<std::endl;
-                        }while(cur_token == COMMA);
-
-                    } 
-                    left = std::make_shared<Tuple>(tok,vals);;
-                }
-                std::cout<<"step :: returing paren exper "<<toks[cur_index].data<<std::endl;
-                if(cur_token != RPAREN){
-                    err::out("expected close PAREN ",toks[cur_index]);
-                } 
-                next();
-                m_preced = old;
-                switch(cur_token){
-                    case DOT:
-                    case ARROW:
-                        left = parseDotOrArrow(left);
-                        break;
-                    default:
-                        left = parseSecondryExpr(left);
-                        break;
-                }
+            case NIL:
+                m_node = std::make_shared<NullLiteral>(toks[cur_index]);
                 break;
-            }
-            case LBRACK:
-            {
-                left = parseArrayExpr();
+            case CHAR:
+            case STR:
+                m_node = std::make_shared<StringLiteral>(toks[cur_index],(toks[cur_index].tok_type == CHAR?true:false));
                 break;
-            }
-            case RPAREN:
-            //case COMMA:
-            case SCOL:
-            case RBRACE:
-            case RBRACK:
-            case COL:
-            case FEOF:
-            {
-                break;
-            }
             default:
-                err::out("expected exper \'",toks[cur_index]);
-                break;
-            
+                err::out("expected 'literal' found -> ",toks[cur_index]);
+                return false;
         }
-        return left;
-    }
-
-
-    AstPtr Parser::parseSecondryExpr(AstPtr left){
-       std::cout<<"entering sec exper "<<toks[cur_index].data<<std::endl;
-        switch(cur_token)
-        {
-            case ASSN_ADD:
-            case ASSN_DIV:
-            case ASSN_MOD:
-            case ASSN_SUB:
-            case ASSN_MUL:
-            case AND_ASSN:
-            case LSHIFT_ASSN:
-            case RSHIFT_ASSN:
-            case OR_ASSN:
-            case NOT_ASSN:
-            case XOR_ASSN:
-            case ASSN:
-            {
-                left = parseAssignment(left);
-                break;
-            }
-            case MUL:
-            case DIV:
-            case MOD:
-            case ADD:
-            case SUB:
-            case RSHIFT:
-            case LSHIFT:
-            case LT:
-            case LEQL:   
-            case GT:
-            case GEQL:
-            case EQL:
-            case NEQL:
-            case AND_OP:
-            case XOR_OP:
-            case OR_OP:
-            case AND:
-            case OR:
-            {
-                left = parseBineryExpr(left, m_preced);
-                break;
-            }
-            case RPAREN:
-            case COMMA:
-            case SCOL:
-            case COL:
-            case RBRACE:
-            case RBRACK:
-            case FEOF:
-            {
-                break;
-            }
-            default:
-                err::out("expected sec exper \'",toks[cur_index]);
-                break;
-        }
-
-        return left;
+        next();
+        dump2(__func__);
+        return true;
     }
 
 
 
 
-    int Parser::preced(Token_type op){
-        switch (op)
-        {
-        case MUL:
-        case DIV:
-        case MOD:
-            return 10;
-        case ADD:
-        case SUB:
-            return 9;
-        case LSHIFT:
-        case RSHIFT:
-            return 8;
-        case LT:
-        case LEQL:
-        case GT:
-        case GEQL:
-            return 7;
-        case EQL:
-        case NEQL:
-            return 6;
-        case AND:
-            return 5;
-        case XOR_OP:
-            return 4;
-        case OR:
-            return 3;    
-        case AND_OP:
-            return 2;  
-        case OR_OP:
-            return 1;
-        default:
-            err::out("operator Token ",toks[cur_index]);
+
+
+
+
+
+
+bool Parser::parseSemiConsumedExpr() {
+    dump(__func__);
+    if(check(IDEN)) {
+        if(!parseIdenExp()){
+            return false;
         }
-        return 0;
+    }else if(check(STAR)) {
+        if(!parsePrefixExpr()){
+            return false;
+        }
+    }else if(check(LPAREN)) {
+        if(!parseParenExpr()) {
+            return false;
+        }
+    }else {
+        err::out("expected expression is invalid -> ",toks[cur_index]);
+        return false;
     }
 
+    if(!parseSpecialExpr()){
+        return false;
+    }
 
-    AstPtr Parser::parseBineryExpr(AstPtr left, int prev_prece) {
+    if(AssignOP(cur_token)) {
+        if(!parseAssignment()){
+            return false;
+        }
+    }
+    if(!check(SCOL)){
+        err::out("expected ';' found -> ",toks[cur_index]);
+        return false;
+    }
+    next();
+    dump2(__func__);
+    return true;
+}
+
+bool Parser::parsePathExpr() {
+        dump(__func__);
+        AstPtr right,left; 
         tokt tok = toks[cur_index];
-        Token_type opr;
-        AstPtr right;
-        if(left == nullptr) {
-            left = parsePrimaryExpr();
-        }
-                    std::cout<<"step :: entering binery exper "<<" "<<toks[cur_index].data<<std::endl;
+        left = m_node;
 
-        //2+3*3/4+2*3
-        while(BineryOP(cur_token)) {
-            opr = cur_token;
-            m_preced = preced(opr);
-            if(prev_prece > m_preced) {
-                return left;
-            }
+        while(check(COLCOL)){
             next();
-            right = parseBineryExpr(nullptr, m_preced + 1);
-            left = std::make_shared<BineryExper>(tok, left, opr, right);
-            m_preced = 0;
+            if(!parseExpr()){
+                err::out("expected 'identifier' found -> ",toks[cur_index]);
+                return false;
+            }
+            right = m_node;
+            m_node = std::make_shared<Path>(tok, left, right);
         }
+        dump2(__func__);
 
-        return left;
+        return true;
+}
+
+bool Parser::parseRangeExpr() {
+    dump(__func__);
+    AstPtr right,left; 
+    tokt tok = toks[cur_index];
+
+    left = m_node;
+
+    while(check(DOTDOT)){
+        next();
+        if(check(IDEN)&&!parseIdenExp()){
+            return false;
+        }else if(isLiteral(cur_token)&&!parseLiteral()){
+            return false;
+        }else if(check(LPAREN)&&!parseParenExpr()){
+            return false;
+        }
+        right = m_node;
+        m_node = std::make_shared<Variadic>(tok, left, right);
+    }
+    dump2(__func__);
+
+    return true;
+}
+
+bool Parser::parseCastExpr(){
+    dump(__func__);
+    tokt tok = toks[cur_token];
+    AstPtr left = m_node;
+    while(check(AS)){
+        next();
+        if(PreDefType(cur_token)&&!parseType()){
+            err::out("expected 'type' found -> ",toks[cur_index]);
+            return false;
+        }
+    }
+    AstPtr right = m_node;
+    m_node = std::make_shared<AsState>(tok,left,right);
+            dump2(__func__);
+
+    return true;
+}
+
+bool Parser::parseAssignment() {
+    dump(__func__);
+    AstPtr right,left; 
+    tokt tok = toks[cur_index];
+    left = m_node;
+    while(AssignOP(cur_token)){
+        next();
+        if(!parseExpr()){
+            err::out("expected 'identifier' found -> ",toks[cur_index]);
+            return false;
+        }
+        right = m_node;
+        m_node = std::make_shared<AssignmentExpr>(tok, left, right);
+    }
+    dump2(__func__);
+    return true;
+}
+
+
+bool Parser::parseSpecialExpr() {
+    if(check(DOTDOT)) {
+        if(!parseRangeExpr()) {
+            return false;
+        }
+    }else if(check(COLCOL)) {
+        if(!parsePathExpr()) {
+            return false;
+        }
+    }else if(check(AS)) {
+        if(!parseCastExpr()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Parser::parseExpr() {
+    dump(__func__);
+
+    if(UnaryOP(cur_token)){
+        if(!parsePrefixExpr()){
+            return false;
+        }
+    }else if(check(IDEN)){
+        if(checkh(LBRACE)){
+            next();
+            if(!parseStructExpr()){
+                return false;
+            }
+            return true;
+        }
+        if(!parseIdenExp()){
+            return false;
+        }
+    }else if(check(LPAREN)){
+        if(!parseParenExpr()){
+            return false;
+        }
+    }else if(check(LBRACK)){
+        if(!parseArrayExpr()){
+            return false;
+        }
+        return true;
+    }else if(isLiteral(cur_token)){
+        if(!parseLiteral()){
+            return false;
+        }
+    }
+
+    if(!parseSpecialExpr()){
+        return false;
+    }
+
+    if(BineryOP(cur_token)){
+        if(!parseBineryExpr(m_preced)){
+            return false;
+        }
+    }else if(AssignOP(cur_token)){
+        if(!parseAssignment()){
+            return false;
+        }
+    }
+
+    dump2(__func__);
+    return true;
+}
+
+bool Parser::parseBineryLRExpr() {
+   if((check(IDEN)&&!check(LBRACE))||isLiteral(cur_token)||
+        check(STAR)||check(MINUS)||check(LPAREN)) {
+        if(!parseExpr()){
+            return false;
+        }
+   }else{
+        err::out("expected binery expression found -> ",toks[cur_index]);
+        return false;
+   }
+
+   return true;
+}
+
+bool Parser::parseCallExpr() {
+    dump(__func__);
+
+    if(!parseFuncCall()){
+        return false;
+    }
+
+    if(check(DOT)||check(ARROW)){
+        if(!parseDotOrArrow()){
+            return false;
+        }
+    }else if(check(LBRACK)) {
+        if(!parsefullArrayexpr()){
+            return false;
+        }
+    }
+    dump2(__func__);
+
+    return true;
+}
+
+bool Parser::parsefullArrayexpr() {
+        dump(__func__);
+
+    if(!parseArrayAccess()){
+        return false;
+    }
+
+    if(check(DOT)||check(ARROW)){
+        if(!parseDotOrArrow()){
+            return false;
+        }
+    }else if(check(LPAREN)) {
+        if(!parseCallExpr()){
+            return false;
+        }
+    }
+    dump2(__func__);
+
+    return true;
+}
+
+bool Parser::parseDotOrArrow() {
+    dump(__func__);
+    AstPtr right,left; 
+    tokt tok = toks[cur_index];
+    Token_type op = cur_token;
+    left = m_node;
+    //while(check(DOT)||check(ARROW)){
+        next();
+        if(isLiteral(cur_token)){
+            if(!parseLiteral()){
+                return false;
+            }
+        }else if(check(IDEN)&&!parseIdenExp()){
+            err::out("expected expression found -> ",toks[cur_index]);
+            return false;
+        }
+        right = m_node;
+        m_node = std::make_shared<MemberExpr>(tok, left, op, right);
+    //}
+    dump2(__func__);
+
+    return true;
+}
+
+
+bool Parser::parseIdenExp() {
+    dump(__func__);
+
+    parseIdentifier();
+    if(check(LPAREN)){
+        if(!parseCallExpr()){
+            return false;
+        }
+    }else if(check(LBRACK)){
+        if(!parsefullArrayexpr()){
+            return false;
+        }
+    }else if(check(DOT)||check(ARROW)){
+        if(!parseDotOrArrow()){
+            return false;
+        }
+    }
+    dump2(__func__);
+
+    return true;
+}
+
+bool Parser::parsePointerExpr() {
+    dump(__func__);
+
+    bool isType = false;
+    Token_type op = cur_token;
+    tokt tok = toks[cur_index];
+    AstPtr base;
+    next();
+    if(check(STAR)){
+        parsePrefixExpr();
+    }else if(check(LPAREN)) {
+        if(!parseParenExpr()){
+            return false;
+        }
+    }else if(check(IDEN)) {
+        if(!parseIdenExp()){
+            return false;
+        }
+    }
+    base = m_node;
+    m_node = std::make_shared<PointerExpr>(tok,base, isType);
+    
+    dump2(__func__);
+    return true;
+}
+
+
+bool Parser::parseRefExpr() {
+    dump(__func__);
+
+    bool isType = false;
+    Token_type op = cur_token;
+    tokt tok = toks[cur_index];
+    AstPtr base;
+    next();
+    if(check(LBRACK)){
+        if(!parseArrayExpr()){
+            return false;
+        }
+    }else if(check(LPAREN)) {
+        if(!parseParenExpr()){
+            return false;
+        }
+    }else if(check(IDEN)) {
+        if(!parseIdenExp()){
+            return false;
+        }
+    }
+    base = m_node;
+    m_node = std::make_shared<RefExpr>(tok,op, base,isType);
+    
+    dump2(__func__);
+    return true;
+}
+
+
+
+bool Parser::parsePrefixExpr() {
+    dump(__func__);
+
+    if(check(STAR)){
+        if(!parsePointerExpr()){
+            return false;
+        }
+    }else if(check(AND_OP)){
+        if(!parseRefExpr()){
+            return false;
+        }
+    }else if(check(MINUS)){
+        if(check(IDEN)){
+            if(!parseIdenExp())
+                return false;
+        }else if(isLiteral(cur_token)) {
+            if(!parseLiteral()){
+                return false;
+            }
+        }else if(check(LPAREN)) {
+            if(!parseParenExpr()){
+                return false;
+            }
+        }
+    }else {
+        return false;
+    }
+    dump2(__func__);
+
+    return true;
+}
+
+
+bool Parser::parseParenExpr() {
+    next();
+    dump(__func__);
+    int old = m_preced;
+    m_preced = 0;
+    AstPtr node;
+    if(check(RPAREN)){
+        err::out("expected expression found -> ",toks[cur_index]);
+        return false;
+    }else if(!parseExpr()){
+        return false;
+    }
+    node = m_node;
+    if(check(COMMA)) {
+        bool isType = false;;
+        tokt tok = toks[cur_index];
+        std::vector<AstPtr>vals;
+        vals.push_back(node);
+        if(!check(RPAREN)) {
+            next();
+            while(!check(RPAREN)){ 
+                m_preced = 0;
+                if(!parseExpr()){
+                    err::out("expected expression found -> ",toks[cur_index]);
+                    return false;
+                }
+                vals.push_back(m_node);
+                if(check(RPAREN)){
+                    break;
+                }
+                if(!check(COMMA)){
+                    err::out("expected ',' found -> ",toks[cur_index]);
+                    return false;
+                }
+                next();   
+            }
+
+        } 
+        if(cur_token != RPAREN){
+            err::out("expected ')' found -> ",toks[cur_index]);
+            return false;
+        }
+        next(); 
+        node = std::make_shared<Tuple>(tok,vals,isType);
+        m_preced = old;
+        m_node = node;
+                        dump2(__func__);
+
+        return true;
+    }
+
+    if(cur_token != RPAREN){
+        err::out("expected ')' found -> ",toks[cur_index]);
+        return false;
+    } 
+    next();
+    m_preced = old;
+    m_node = node;
+    m_node = std::make_shared<GroupedExpr>(m_node);
+            dump2(__func__);
+
+    return true;
+}
+
+bool Parser::parseBineryExpr(int prev_prece) {
+    dump(__func__);
+    tokt tok = toks[cur_index];
+    Token_type opr;
+    AstPtr right,left;
+    left = m_node;
+    if(m_node == nullptr){
+        if(!parseBineryLRExpr()){
+            return false;
+        }
+        left = m_node;
+    }else
+        left = m_node;
+
+    //2+3*3/4+2*3
+    while(BineryOP(cur_token)) {
+        opr = cur_token;
+        m_preced = preced(opr);
+        if(prev_prece > m_preced) {
+            std::cout<<"return ------======"<<m_preced<<" "<<prev_prece<<std::endl;
+            m_node = left;
+            return true;
+        }
+        next();
+        m_node = nullptr;
+        if(parseBineryExpr(m_preced + 1)){
+            right = m_node;
+        }
+        left = std::make_shared<BineryExper>(tok, left, opr, right);
+        m_preced = 0;
+    }
+    m_node = left;
+            dump2(__func__);
+
+    return true;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    bool Parser::parseTupleType() {
+        dump(__func__);
+        bool isType = true; 
+        tokt tok = toks[cur_index];
+        std::vector<AstPtr>types;
+        if(!check(LPAREN)){
+            err::out("expected '(' found -> ",toks[cur_index]);
+            return false;
+        }
+        next();
+
+        if(!check(RPAREN)){
+            while(!check(RPAREN)){
+                if(!parseType()){
+                    return false;
+                }
+                types.push_back(m_node);
+                if(check(RPAREN)){
+                    break;
+                }
+                if(!check(COMMA)){
+                    err::out("expected ',' found -> ",toks[cur_index]);
+                    return false;
+                }
+                next(); 
+            }
+        }
+        if(!check(RPAREN)){
+            err::out("expected ')' found -> ",toks[cur_index]);
+            return false;
+        }
+        next();
+        m_node = std::make_shared<Tuple>(tok, types,isType);
+                dump2(__func__);
+
+        return true;
     }
 
 
+    bool Parser::parseBlockStatement() {
+        dump(__func__);
+        std::vector<AstPtr> statms;
+        
+        if(!check(LBRACE)){
+            err::out("expected '{' found ->",toks[cur_index]);
+            return false;
+        }
+        next();
 
-    AstPtr Parser::parseDotOrArrow(AstPtr left) {
+        if(!check(RBRACE)){
+            while(!check(RBRACE)) {
+                if(!parseStatement()){
+                    return false;
+                }
+                statms.push_back(m_node);
+                if(check(FEOF)){
+                    return false;
+                }
+                if(check(RBRACE)){
+                    break;
+                }
+                
+            } 
+        }
+        
+        if(!check(RBRACE)){
+            err::out("expected '}' found -> ",toks[cur_index]); 
+            return false;
+        }       
+        next();
+        m_node = std::make_shared<BlockStatement>(statms);
+                dump2(__func__);
+
+        return true;
+    }
+
+
+    bool Parser::parseTypeStatm() {
+        dump(__func__);
+        tokt tok = toks[cur_index];
+        if(!check(TYPE)){
+            err::out(" expected keyword 'type' found -> ", toks[cur_index]);     
+            return false;
+        }
+        next();
+        if(!check(IDEN)){
+            err::out(" expected 'identifier' found -> ", toks[cur_index]);     
+            return false;
+        }
+        parseIdentifier();
+        AstPtr left = m_node;
+        
+        if(!check(COL)){
+            err::out(" expected ':' found -> ", toks[cur_index]);     
+            return false;
+        }
+        next();
+
         AstPtr right;
-        tokt tok = toks[cur_index];
-        Token_type mem_op;
-        
-        if(cur_token == ARROW || cur_token == DOT){   
-                next();
-                right = parsePrimaryExpr();
+        if(!parseType()){
+            err::out(" expected 'type specifier' found -> ", toks[cur_index]);     
+            return false;
         }
+        right = m_node; 
 
-        return std::make_shared<MemberExpr>(tok, left, mem_op, right);
+        if(!check(SCOL)){
+            err::out(" expected ';' found -> ", toks[cur_index]);     
+            return false;
+        }
+        next();
+
+        m_node = std::make_shared<TypeState>(tok, left, right);
+                dump2(__func__);
+
+        return true;
     }
 
 
-    AstPtr Parser::parseArrayAccess(AstPtr left) {
+    bool Parser::parseArrayType() {
+        dump(__func__);
+        std::vector<AstPtr>d;
+        AstPtr type;
         tokt tok = toks[cur_index];
-        int lpos,rpos;
-        AstPtr expr;
-        lpos = cur_index;
-        if(cur_token != LBRACK){
-            err::out("expected index ",toks[cur_index]);
-            
-        }
+
         next();
-        
-        if(cur_token != RBRACK){
-
-            expr = parsePrimaryExpr();
-
+        if(check(RBRACK)){
+            err::out("expected '[' found -> ",toks[cur_index]);
+            return false;
         } else {
-            err::out("expected index ",toks[cur_index]);
+            while(!check(RBRACK)){
+                //todo
+                if(!parseExpr()){
+                    err::out("expected expression found -> ",toks[cur_index]);
+                    return false;
+                }
+                d.push_back(m_node);
+                if(check(RBRACK)){
+                    break;
+                }
+                if(!check(SCOL)){
+                    err::out("expected ';' found -> ",toks[cur_index]);
+                    return false;
+                }
+                next();
+            }
         }
-        
-        rpos = cur_index;
-        if(cur_token != RBRACK){
-            err::out("expected index ] ",toks[cur_index]);
-            
+        if(!check(RBRACK)){
+            err::out("expected ']' found -> ",toks[cur_index]);
+            return false;
         }
         next();
-        left = std::make_shared<IndexExpr>(tok,left,lpos,expr,rpos);
-
-        if(cur_token == LBRACK){
-            left = parseArrayAccess(left);
+        if(parseType()){
+            type = m_node;
         }
+                    
+        m_node = std::make_shared<ArrayType>(tok, d, type);
+                dump2(__func__);
 
-        return left;
+        return true;
     }
 
 
-    AstPtr Parser::parseFuncCall(AstPtr sig) {
+
+    bool Parser::parseArrayAccess() {
+        dump(__func__);
+        AstPtr sig = m_node;
+        std::vector<AstPtr>e;
+        if(!check(LBRACK)){
+            err::out("expected '[' found -> ",toks[cur_index]);
+            return false;
+        }
+        next();
+        
+        if(check(RBRACK)){
+             err::out("expected expression found -> ",toks[cur_index]);
+             return false;
+        } 
+           
+        while(!check(RBRACK)){
+            if(!parseExpr()) {
+                err::out("expected expression invalid -> ",toks[cur_index]);
+                return false;
+            }
+            e.push_back(m_node);
+            if(check(RBRACK)){
+                break;
+            }
+            if(!check(SCOL)){
+                err::out("expected ';' found -> ",toks[cur_index]);
+                return false;
+            }else{
+                next();
+            }
+        }
+        
+        if(cur_token != RBRACK){
+            err::out("expected ']' found -> ",toks[cur_index]);
+            return false;
+            
+        }
+        next();
+        m_node = std::make_shared<IndexExpr>(sig,e);
+                dump2(__func__);
+
+
+        return true;
+    }
+
+    bool Parser::parseArrayExpr() {
+        dump(__func__);
+        tokt tok = toks[cur_index];
+        std::vector<AstPtr>vals;
+        next();
+        if(!check(RBRACK)){
+            while(!check(RBRACK)){
+                m_preced = 0;
+                if(parseExpr()){
+                    vals.push_back(m_node);
+                }else{
+                    err::out("expected array exression is invalid -> ",toks[cur_index]);   
+                    return false;
+                }
+                if(check(RBRACK)){
+                    break;
+                }
+                if(!check(COMMA)){
+                    err::out("expected ',' found -> ",toks[cur_index]);   
+                    return false;
+                }
+                next();
+            }
+
+            if(!check(RBRACK)){
+                err::out("expected ']' found -> ",toks[cur_index]);   
+                return false;
+            }
+        }
+
+        next();
+
+        m_node = std::make_shared<ListExpr>(tok,vals);
+                dump2(__func__);
+
+        return true;
+    }
+
+
+    bool Parser::parseStructExpr() {  
+        dump(__func__);      
+        bool isDecl = false;;
+        tokt tok = toks[cur_index];
+        std::vector<AstPtr> e;
+        AstPtr sig = m_node;
+        if(!check(LBRACE)){
+            err::out("expected '{' found -> ",toks[cur_index]);
+            return false;
+        }
+        next();
+
+        if(!check(RBRACE)){
+            while(!check(RBRACE)){
+                AstPtr key,val;
+                m_preced = 0;
+                if(parseExpr()){
+                    key = m_node;
+                }
+                if(check(COL)) {
+                    next();
+                    if(!parseExpr()){
+                        err::out("expected 'value' found -> ",toks[cur_index]);
+                        return false;
+                    }
+                    val = m_node;
+                    e.push_back(std::make_shared<Parameter>(key,val));
+                }else {
+                    err::out("expected ':' found -> ",toks[cur_index]);
+                    return false;
+                }
+                if(check(RBRACE)){
+                    break;
+                }
+                if(!check(COMMA)){
+                    err::out("expected ',' found -> ",toks[cur_index]);
+                    return false;
+                }
+                next();
+            }
+        }
+
+        if(!check(RBRACE)) {
+            err::out("expected '}' found -> ",toks[cur_index]);
+            return false;
+        }
+        next();
+        m_node = std::make_shared<StructState>(tok,sig,e,isDecl);
+                dump2(__func__);
+
+        return true;
+    }
+// unary expression = expression
+
+    bool Parser::parseFuncCall() {
+        dump(__func__);
         tokt tok = toks[cur_index];
         std::vector<AstPtr> args;
+        AstPtr sig = m_node;
 
-        if(cur_token != LPAREN){
-            err::out("expected call ",toks[cur_index]);
+        if(!check(LPAREN)){
+            err::out("expected '(' found -> ",toks[cur_index]);
+            return false;
         }
+        next();
    
-        if(next_t().tok_type != RPAREN) {
-                
-            do {
+        if(!check(RPAREN)) {
+            int prec_old = m_preced;
+            while(!check(RPAREN)) {
+                m_preced = 0;
+                if(!parseExpr()){
+                    err::out("expected expression invalid -> ",toks[cur_index]);
+                    return false;
+                }
+                args.push_back(m_node);
+                if(check(RPAREN)){
+                    break;
+                }
+                if(!check(COMMA)){
+                    err::out("expected ',' found -> ",toks[cur_index]);
+                    return false;
+                }
                 next();
-                AstPtr arg;
 
-                arg = parsePrimaryExpr();
-
-                args.push_back(arg);
-
-            } while(cur_token == COMMA);
-
-        }else{
-            next();
+            }
+            int m_preced = prec_old;
         }
-    
 
         if(cur_token != RPAREN){
-            err::out("expected call ",toks[cur_index]);
-
+            err::out("expected ')' found -> ",toks[cur_index]);
+            return false;
         }else
            next();
         
-        return std::make_shared<FunctionCall>(tok,sig, args);
+        m_node = std::make_shared<FunctionCall>(tok, sig, args);
+                dump2(__func__);
+
+        return true;
     }
 
 
-
-    AstPtr Parser::parseTypeValuePair() {
+    bool Parser::parseTypeValuePair() {
+        dump(__func__);
+        tokt tok = toks[cur_index];
         AstPtr iden,type;
         
-        if(cur_token == IDEN){
-            iden = parseIdentifier();
+        if(parseIdentifier()){
+            iden = m_node;
         } else {
-            err::out("expected type val checker ",toks[cur_index]);
+            err::out("expected 'identifier' found -> ",toks[cur_index]);
+            return false;
         }
-        next();
-        if(cur_token != COL){
-            err::out("expected \' ",toks[cur_index]);
+        if(!check(COL)){
+            err::out("expected \':\' found ->",toks[cur_index]);
+            return false;
         }else{
             next();
-            type = parseType();
+            if(!parseType()){
+                return false;
+            }
+            type = m_node;
         }
-        return std::make_shared<Parameter>(iden, type);
+        m_node = std::make_shared<Parameter>(iden, type);
+                dump2(__func__);
+
+        return true;
     }
 
-
-    AstPtr Parser::parseStructExpr(AstPtr left) {
-        tokt tok = toks[cur_index];
-        std::vector<AstPtr> keys;
-        std::vector<AstPtr> vals;
-        if(cur_token != LBRACE){
-            err::out("expected struct exper ",toks[cur_index]);
-        }
-
-        if(next_t().tok_type != RBRACE){
-            do{
-                next();
-                AstPtr key,val;
-                key = parsePrimaryExpr();
-                if(cur_token == COL) {
-                    keys.push_back(key);
-                    next();
-                    val = parsePrimaryExpr();
-                    vals.push_back(val);
-                } else {
-                    vals.push_back(key);
-                }
-
-            }while(cur_token == COMMA);
-        }else{
-            next();
-        }
-
-        if(cur_token != RBRACE) {
-            err::out("expected struct exper ",toks[cur_index]);
-        }
-
-        return std::make_shared<StructExpr>(tok, left, keys, vals);
-
-    }
-
-
-    AstPtr Parser::parseStruct() {
+    bool Parser::parseStruct() {
+        dump(__func__);
+        bool isDecl = true;
         tokt tok = toks[cur_index];
         std::vector<AstPtr> element;
-        AstPtr name;
-        if(cur_token != STRUCT){
-            err::out("expected struct ",toks[cur_index]);
+        AstPtr sig;
+        if(!check(STRUCT)) {
+            err::out("expected keyword 'struct' found ->",toks[cur_index]);
+            return false;
         }
         next();
-        if(cur_token != IDEN) {
-            err::out("expected struct ",toks[cur_index]);
+        if(!check(IDEN)) {
+            err::out("expected expression 'identifier' found -> ",toks[cur_index]);
+            return false;
         }else{
-            name = parseIdentifier();
-            next();
+            parseIdentifier();
+            sig = m_node;
         }
-        if(cur_token != LBRACE) {
-            err::out("expected struct ",toks[cur_index]);
+
+        if(!check(LBRACE)) {
+            err::out("expected '{' found -> ",toks[cur_index]);
+            return false;
         }
         next();
 
-        if(cur_token != RBRACE){
-            err::out("expected struct ",toks[cur_index]);
+        if(check(RBRACE)){
+            err::out("expected expression invalid -> ",toks[cur_index]);
+            return false;
         }
 
 
-        while(cur_token !=  FEOF && cur_token != RBRACE){
+        while(cur_token !=  FEOF && !check(RBRACE)){
                 
-                AstPtr member;
-                
-                member =  parseTypeValuePair();
-                
-                element.push_back(member);
-
-                next();
-                if(cur_token != COMMA){
-                    err::out("expected struct {;} ",toks[cur_index]);
+                if(parseTypeValuePair()){
+                    element.push_back(m_node);
+                }
+                if(check(RBRACE)){
+                    break;
+                }
+                if(!check(COMMA)){
+                    err::out("expected ',' found -> ",toks[cur_index]);
+                    return false;
                 }else
                     next();
         }
 
-        if(cur_token != RBRACE){
-            err::out("expected struct ",toks[cur_index]);
-            
+        if(!check(RBRACE)){
+            err::out("expected '}' found -> ",toks[cur_index]);
+            return false;
         }
-        
-        std::cout<<"returning struct -> var "<<toks[cur_index].data<<std::endl;
-         return std::make_shared<StructState>(tok, name, element);
+        next();
+
+        if(!check(SCOL)){
+            err::out("expected '}' found -> ",toks[cur_index]);
+            return false;
+        }
+        next();
+        m_node = std::make_shared<StructState>(tok, sig, element,isDecl);
+                dump2(__func__);
+
+        return true;
     }
 
 
-    AstPtr Parser::parseFuncdef(){
-        tokt tok = toks[cur_index];
-        AstPtr name;
-        std::vector<AstPtr> parameter;
-        AstPtr retype;
-        AstPtr body;
-        if(cur_token != FN){
-            err::out("expected keyword \' ",toks[cur_index]);
-            
-        }
-        next();
-        if(cur_token != IDEN){
-            err::out("expected func 1",toks[cur_index]);
-        }else
-            name = parseIdentifier();
-        next();
-        if(cur_token != LPAREN){
-            err::out("expected func 1",toks[cur_index]);
-        }
 
-        if(next_t().tok_type != RPAREN){
-            
-            do {
-                next();
-
-                AstPtr member;
-                
-                member = parseTypeValuePair();
-                
-                parameter.push_back(member);
-
-            } while(cur_token == COMMA);
-
-        }else{
-            next();
-        }
-
-
-        if(cur_token != RPAREN){
-            err::out("expected func 2 ",toks[cur_index]);
-            
-        }
-        next();
-
-        if(cur_token == ARROW) {
-            next();
-            retype = parseType();
-        }
-
-        body = parseBlockStatement();
-
-        return std::make_shared<FunctionDef>(tok, name, parameter, retype, body);
-    }
-
-
-    AstPtr Parser::parseConst() {
-        tokt tok = toks[cur_index];
-        
-        if(cur_token != CONST){
-            err::out("expected const ",toks[cur_index]);
-            
-        }
-        next();
-
-        if(cur_token != IDEN){
-            err::out("expected const ",toks[cur_index]);
-        }
-
-        AstPtr name = parseIdentifier();
-        next();
-        AstPtr type = parseType();
-        AstPtr val;
-        if(cur_token == ASSN){
-            next();
-            val = parsePrimaryExpr();
-        }else {
-            err::out("expected const ",toks[cur_index]);
-            next();
-        }
-
-        if(cur_token != SCOL){
-            err::out("expected const ",toks[cur_index]);
-            
-        }
-        next();
-
-        return std::make_shared<ConstState>(tok,name,type,val);
-
-    }
-
-    AstPtr Parser::parseReturn() {
+    bool Parser::parseReturn() {
+        dump(__func__);
         tokt tok = toks[cur_index];
         AstPtr val;
         next();
 
-        if(cur_token != SCOL){
-            next();
-            val = parsePrimaryExpr();
-        }
-        if(cur_token != SCOL){
-                err::out("expected retuen ",toks[cur_index]);
-        }
-        std::cout<<"returning from return statm -> "<<toks[cur_index].data<<std::endl;
-        next();
+        if(!check(SCOL)){
 
-        return std::make_shared<ReturnState>(tok, val);
+            if(!parseExpr()) {
+                return false;
+            }
+            val = m_node;
+        }
+        if(!check(SCOL)){
+                err::out("expected ';' found -> ",toks[cur_index]);
+                return false;
+        }
+
+        next();
+        m_node = std::make_shared<ReturnState>(tok, val);
+                dump2(__func__);
+
+        return true;
     }
 
-       
-    AstPtr Parser::parseIfStatm() {
-        tokt tok = toks[cur_index];
-        if(cur_token != IF){
-            err::out("expected if ",toks[cur_index]);
-            
+
+    bool Parser::parseIfStatm() {
+        dump(__func__);
+        if(!check(IF)){
+            err::out("expected if ",toks[cur_index]);   
+            return false;
         }
+        tokt tok = toks[cur_index];
         next();
         AstPtr condition;
         AstPtr if_;
         AstPtr else_;
 
-        if(cur_token == LBRACE) {
-            err::out("expected if 1 ",toks[cur_index]);
-            next();
+        if(check(LBRACE)) {
+            err::out("expected if expression is invalid -> ",toks[cur_index]);
+            return false;
         } else {
-            condition = parsePrimaryExpr();
-        }
-        std::cout<<"entering after cond "<<toks[cur_index].data<<std::endl;
-        if(cur_token != LBRACE) {
-            err::out("expected if 2 ",toks[cur_index]);
-            next();
+            if(!parseExpr()){
+                return false;
+            }
+            condition = m_node;
         }
 
-        if_ = parseBlockStatement();
-        std::cout<<"entering after block "<<toks[cur_index].data<<std::endl;
+        if(!check(COL)){
+            err::out("expected ':' found -> ",toks[cur_index]);
+            return false;
+        }
+        next();
 
-        if(cur_token == ELSE) {
+        if(!check(LBRACE)) {
+            err::out("expected '{' found -> ",toks[cur_index]);
+            return false;
+        }
+
+        if(parseBlockStatement()){
+            if_ = m_node;
+        }
+
+        if(check(ELSE)) {
             next();
             switch(cur_token){
                 case IF:
-                    else_ = parseIfStatm();
+                    if(!parseIfStatm()){
+                        return false;
+                    }
+                    else_ = m_node;
                     break;
                 case LBRACE:
-                    else_ = parseBlockStatement();
+                    if(!parseBlockStatement()){
+                        return false;
+                    }
+                    else_ = m_node;
                     break;
                 default:
-                    err::out("expected if 3 ",toks[cur_index]);
+                    err::out("invalid else expression ",toks[cur_index]);
+                    return false;
 
             }
         }
-        
-        return std::make_shared<IfStatement>(tok,condition, if_, else_);
+        m_node = std::make_shared<IfStatement>(tok,condition, if_, else_);
+                dump2(__func__);
+
+        return true;
     }
 
 
-
-    AstPtr Parser::parseLetStatm() {
+    bool Parser::parseFor() {
+        dump(__func__);
         tokt tok = toks[cur_index];
-        std::vector<AstPtr> vars;
+        AstPtr left,right;
+        AstPtr body;
+        if(!check(FOR)) {
+            err::out("expected keyword 'for' found -> ",toks[cur_index]);
+            return false;
+        }
+        next();
+        if(!parseIdentifier()) {
+            return false;
+        }
+        left = m_node;
+        if(!check(IN)){
+            err::out("expected keyword 'in' found -> ",toks[cur_index]);
+            return false;
+        }
+        next();
+        
+
+        if(check(LBRACE)){
+            err::out("expected expression found -> ",toks[cur_index]);
+             return false;
+        }
+          
+        if(!parseExpr()) {
+            err::out("unexpected expression -> ",toks[cur_index]);
+            return false;
+        }
+        right = m_node;
+        
+        if(!check(COL)){
+            err::out("expected ':' found -> ",toks[cur_index]);
+             return false;
+        }
+        next();
+
+        if(!parseBlockStatement()){
+            return false;
+        }
+        body = m_node;            
+
+        m_node = std::make_shared<ForInLoop>(tok, left, right, body);
+                dump2(__func__);
+
+        return true;
+    }
+
+
+    bool Parser::parseWhile() {
+        dump(__func__);
+        tokt tok = toks[cur_index];
+        AstPtr expr;
+        AstPtr body;
+        if(!check(WHILE)) {
+            err::out("expected keyword 'while' found -> ",toks[cur_index]);
+            return false;
+        }
+        next();
+        
+        if(check(LBRACE)){
+            err::out("expected expression found -> ",toks[cur_index]);
+             return false;
+        }
+          
+        if(!parseExpr()) {
+            err::out("unexpected expression -> ",toks[cur_index]);
+            return false;
+        }
+        expr = m_node;
+        
+        if(!check(COL)){
+            err::out("expected expression found -> ",toks[cur_index]);
+             return false;
+        }
+        next();
+
+        if(!parseBlockStatement()){
+            return false;
+        }
+        body = m_node;            
+
+        m_node = std::make_shared<WhileLoop>(tok, expr, body);
+                dump2(__func__);
+
+        return true;
+    }
+
+
+    bool Parser::parseFuncdef() {
+        dump(__func__);
+        tokt tok = toks[cur_index];
+        AstPtr sig;
+        std::vector<AstPtr>p;
+        AstPtr ret;
+        AstPtr body;
+
+        if(!check(FN)) {
+            err::out("expected keyword 'fn' found ->\'",toks[cur_index]);
+            return false;
+        }
+        next();
+
+        if(check(IDEN)){
+            parseIdentifier();
+            sig = m_node;
+        }else{
+            err::out("expected function 'identifier' found ->  \'",toks[cur_index]);
+            return false;
+        }
+
+        if(check(LPAREN)) {
+            next();
+            while(!check(RPAREN)) {
+                if(!parseTypeValuePair()) {
+                    return false;
+                }
+                p.push_back(m_node);
+                if(check(RPAREN)){
+                    break;
+                }
+                if(!check(COMMA)) {
+                    err::out("expected \',\' found -> \'",toks[cur_index]);
+                    return false;
+                }
+                next();
+            }
+        }else{
+            err::out("expected function expression -> ",toks[cur_index]);
+            return false;
+        }
+
+        if(!check(RPAREN)){
+            err::out("expected ')' found -> ",toks[cur_index]);
+            return false;
+        }
+        next();
+        if(check(ARROW)){
+            next();
+            if(!parseType()){
+                err::out("expected 'type' found -> ",toks[cur_index]);
+                return false;
+            }
+            ret = m_node;
+        }
+
+        if(check(LBRACE)) {
+            if(!parseBlockStatement()){
+                return false;
+            }
+            body = m_node;
+        }else if(check(SCOL)){
+            next();
+        } else {
+            err::out("expected '{' found -> ",toks[cur_index]);
+            return false;
+        }
+        m_node = std::make_shared<FunctionDef>(tok,sig,p,ret,body);
+                dump2(__func__);
+
+        return true;
+    }
+
+
+    bool Parser::parseLetStatm() {
+        dump(__func__);
+        tokt tok = toks[cur_index];
+        AstPtr v;
         AstPtr type;
         AstPtr val;
-        std::cout<<"entering var "<<toks[cur_index].data<<std::endl;
-
-        if(cur_token != LET){
-            err::out("expected var ",toks[cur_index]);
+        if(!check(LET)) {
+            err::out("expected keyword 'let' found -> \'",toks[cur_index]);
+            return false;
         }
         next();
-        // () : () = ()
-        if(cur_token == LPAREN) {
-
-            do {
-                next();
-                AstPtr var;
-                var = parsePrimaryExpr();
-                vars.push_back(var);
-            } while(cur_token == COMMA);
-
-            if(cur_token != RPAREN){
-                err::out("expected var ",toks[cur_index]);
-            }
-            next();
-
-        } else if (cur_token == IDEN){
-            AstPtr var;
-            var = parsePrimaryExpr();
-            vars.push_back(var);
+        
+        if(check(IDEN)) {
+            parseIdentifier();
+            v = m_node;
         } else {
-            err::out("expected var ",toks[cur_index]);
+            err::out("expected expression identifier\'",toks[cur_index]);
+            return false;
+        }
+
+
+        if(check(SCOL)) {
+            err::out("expected exprssion 'type' require found -> \'",toks[cur_index]);
+            return false;
+        }else if(check(COL)) {
+            next();
+            if(!parseType()){
+                err::out("expected 'type' found -> ",toks[cur_index]);
+                return false;
+            }
+            type = m_node;
+        }
+
+        if(check(ASSN)) {
+            next();
+            if(!parseExpr()){
+                err::out("expected expression found -> ",toks[cur_index]);
+                return false;
+            }
+            val = m_node;
+        }else if(!check(SCOL)){
+            err::out(" -> ",toks[cur_index]);
+            return false;
         }
         
-        if(cur_token == COL) {
+        if(check(SCOL)) {
             next();
-            type = parseType();
-        } else if (cur_token == SCOL){
-            err::out("expected var ",toks[cur_index]);
-        } 
-        
-        if(cur_token == ASSN){
-            next();
-            val = parsePrimaryExpr();
+        } else {
+            err::out("expected ';'found -> ",toks[cur_index]);
+            return false;
         }
+
+        m_node = std::make_shared<VarState>(tok, v, type, val);
+                dump2(__func__);
+
+        return true;
         
-        if(cur_token != SCOL){
-            err::out("expected var ",toks[cur_index]);
-        }else
-            next();
-        return std::make_shared<LetState>(tok, vars, type, val);
     }
-
-
-
-    AstPtr Parser::parseAssignment(AstPtr left) {
-        tokt tok = toks[cur_index];
-        AstPtr right;
-        Token_type op;
-        op = cur_token;
-        std::cout<<"entering assinment oper = "<<toks[cur_index].data<<std::endl;
-        next();
-        right = parsePrimaryExpr();
-        return std::make_shared<AssignmentExpr>(tok, left, op, right);
-    }
-
-
-    AstPtr Parser::parseFor() {
-        tokt tok = toks[cur_index];
-        AstPtr h1, h2, h3, body;
-        if(cur_token != FOR){
-            err::out("expected for ",toks[cur_index]);
-            
-        }
-        next();
-        if(cur_token == LBRACE) {
-            err::out("expected for ",toks[cur_index]);
-            next();
-        }
-
-        if(cur_token != SCOL) {
-                h1 = parseStatement();
-        } 
-
-        if(cur_token == SCOL) {
-            next();
-            if(cur_token != SCOL){
-                h2 = parseStatement();
-            }
-            if(cur_token != SCOL){
-                err::out("expected for ",toks[cur_index]);
-                
-            }
-            next();
-            if(cur_token != LBRACE){
-                h3 = parseStatement();
-            }
-        }else if(cur_token == LBRACE){
-            body = parseBlockStatement();
-            return std::make_shared<For2State>(tok,h2,body);
-        }
-
-            
-
-        std::cout<<"entering for -> block "<<toks[cur_index].data<<std::endl;
-        
-        body = parseBlockStatement();
-
-
-        return std::make_shared<ForLoopState>(tok,h1,h2,h3,body);
     
+
+    bool Parser::parseConst() {
+        dump(__func__);
+        tokt tok = toks[cur_index];
+        
+        if(!check(CONST)){
+            err::out("expected keyword 'const' found -> ",toks[cur_index]);  
+            return false;
+        }
+        next();
+
+        AstPtr name;
+        if(parseIdentifier()){
+            name = m_node;
+        }
+
+        AstPtr type;
+        if(parseType()){
+            type = m_node;
+        }
+
+        AstPtr val;
+        if(check(ASSN)){
+            next();
+            if(parseExpr()){
+                val = m_node;
+            }
+        }else {
+            err::out("expected const ",toks[cur_index]);
+            return false;
+        }
+
+        if(!check(SCOL)){
+            err::out("expected ';' found -> ",toks[cur_index]);
+            return false;
+        }
+        next();
+
+        m_node = std::make_shared<VarState>(tok,name,type,val);
+                dump2(__func__);
+
+        return true;
+
     }
+    
 }
+
+
 

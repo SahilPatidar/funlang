@@ -347,7 +347,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/opt/homebrew/Cellar/cmake/3.24.2/bin/ccmake"
+			"value" : "/opt/homebrew/Cellar/cmake/3.25.1/bin/ccmake"
 		},
 		{
 			"name" : "CMAKE_EXECUTABLE_FORMAT",

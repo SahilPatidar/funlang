@@ -7,6 +7,30 @@ TablePtr TypeChecker::newTable(TablePtr table) {
     return std::make_shared<SymTable<TypePtr>>(table);
 }
 
+bool TypeChecker::checkTuple(TypePtr &type1, TypePtr &type2) {
+    auto ty1 = std::dynamic_pointer_cast<TupleType>(type1);
+    auto ty2 = std::dynamic_pointer_cast<TupleType>(type2);
+
+    if(ty1->tupleTy().size() != ty2->tupleTy().size()){
+       //todo
+    }
+
+    if(!ty1->tupleTy().empty()&&!ty2->tupleTy().empty()){
+        for(int i = 0; i < ty1->tupleTy().size(); i++){
+            if(ty1->tupleTy()[i]->type() == TYPE_POINTER){
+                auto ty1 = std::dynamic_pointer_cast<Pointer>(type1);
+                auto ty2 = std::dynamic_pointer_cast<Pointer>(type2);
+                if(ty1->baseType()->type() != ty2->baseType()->type()){
+                    //todo
+                }
+            }
+            if(ty1->tupleTy()[i]->type() != ty2->tupleTy()[i]->type()){
+                //todo
+            }
+        }
+    }
+    return true;
+}
 
 std::string TypeChecker::identifier(const AstPtr& iden) {
     if(iden->nodeCategory() != NODE_IDEN){
@@ -14,22 +38,14 @@ std::string TypeChecker::identifier(const AstPtr& iden) {
     }
 
     return std::dynamic_pointer_cast<ast::Identifier>(iden)->iden();
-}
-
-bool TypeChecker::isValid(TypePtr &type, AstPtr &node) {
-    node->accept(*this);
-    if(type->type() != m_type->type()){
-        //tdod
-    }
-    return true;
-}   
+} 
 
 bool TypeChecker::isValid(const TypePtr &type1, const TypePtr &type2) {
-    if((retype != NULL && m_type == NULL ) ||
-        (retype == NULL && m_type != NULL )) {
+    if((type1 != NULL && type2 == NULL ) ||
+        (type1 == NULL && type2 != NULL )) {
         //todo
     } 
-    if((retype != NULL && m_type != NULL) && (retype->type() != m_type->type())){
+    if((type1 != NULL && type2 != NULL) && (type1->type() != type2->type())){
         //todo
     }
 
@@ -72,11 +88,16 @@ bool TypeChecker::visit(const AssignmentExpr& astnode) {
 
     }
 
+
     if(!lval->OperatorMatch(astnode.oprator(), m_type)){
 
     }
 
-    m_type = TypeGenerator::Generate(m_type->type());
+    if(lval->type() == TYPE_TUPLE){
+        if(checkTuple(lval,m_type)){
+            //todo
+        }
+    }
     return true;
 }
 
@@ -91,7 +112,8 @@ bool TypeChecker::visit(const FunctionCall& astnode) {
         //todo
     }else{
         for(int i = 0 ; i < astnode.arg().size(); i++){
-           isValid(functype->paramType()[i], astnode.arg()[i]);            
+            astnode.arg()[i]->accept(*this);
+            isValid(functype->paramType()[i],m_type);            
         }
     }
 
@@ -132,21 +154,30 @@ bool TypeChecker::visit(const FunctionDef& astnode) {
 
 bool TypeChecker::visit(const ReturnState& astnode) {
     astnode.value()->accept(*this);
+    if(retype->type() == TYPE_TUPLE){
+        if(checkTuple(retype,m_type)){
+            //todo
+        }
+    }
     isValid(m_type, retype);
+
     return true;
 }
 
 //todo
-bool TypeChecker::visit(const FieldExpr& astnode) {
+bool TypeChecker::visit(const ListExpr& astnode) {
     astnode.listof()[0]->accept(*this);
     TypePtr prev_type = m_type;
-    for(auto &val: astnode.listof()){
-        val->accept(*this);
-        if(m_type->type() != prev_type->type()){
-            //todo
+    if(!astnode.listof().empty()){
+        for(auto &val: astnode.listof()){
+            val->accept(*this);
+            if(m_type->type() != prev_type->type()){
+                //todo
+            }
+            prev_type = m_type;
         }
-        prev_type = m_type;
     }
+    m_type = TypeGenerator::ArrayTyGen(prev_type);
     return true;
 }
 
@@ -161,49 +192,55 @@ bool TypeChecker::visit(const PrefixExper& astnode) {
     return true;
 }
 
-bool TypeChecker::visit(const LetState& astnode) {
+bool TypeChecker::visit(const VarState& astnode) {
+    auto& letnode = const_cast<VarState&>(astnode);
     std::string name = identifier(astnode.varName());
-    astnode.varType()->accept(*this);
-    if(m_type == NULL) {
-        astnode.varVal()->accept(*this);
-        if(m_type == NULL) {
+    if(table->contains(name)){
             //todo
-        }else {
-            astnode.setType(m_type);
-        }
-    }else { 
-        TypePtr ty = m_type;
-        astnode.varVal()->accept(*this);
-        if(m_type != NULL) {
-            if(m_type->type() != ty->type()){
+    }
+    if(astnode.token().tok_type == LET){
+        
+        astnode.varType()->accept(*this);
+        if(m_type == NULL) {
+            astnode.varVal()->accept(*this);
+            if(m_type == NULL) {
                 //todo
+            }else {
+                letnode.setType(m_type);
+            }
+        }else { 
+            TypePtr ty = m_type;
+            astnode.varVal()->accept(*this);
+             if(ty->type() == TYPE_TUPLE){
+                if(checkTuple(ty,m_type)){
+                    //todo
+                }
+            }
+            if(m_type != NULL) {
+                if(m_type->type() != ty->type()){
+                    //todo
+                }
             }
         }
+    }else if(astnode.token().tok_type == CONST) {
+        //todo
+        astnode.varType()->accept(*this);
+        if(m_type == NULL) {
+            //todo
+        }else{
+            TypePtr type = m_type;
+            astnode.varVal()->accept(*this);
+            if(m_type == NULL){
+                //todo
+            }
+            isValid(type, m_type);
+        }
+
     }
     table->insert(name, m_type);
     return true;
 }
 
-
-
-bool TypeChecker::visit(const ConstState& astnode) {
-    astnode.vartype()->accept(*this);
-    if(m_type == NULL) {
-        //todo
-    }else{
-        std::string name = identifier(astnode.vname());
-        TypePtr type = m_type;
-        astnode.value()->accept(*this);
-        if(m_type == NULL){
-            //todo
-        }
-        isValid(type, m_type);
-       table->insert(name, m_type);
-
-    }
-
-    return true;
-}
 
 bool TypeChecker::visit(const ForInLoop& astnode) {
     TablePtr old = table;
@@ -279,6 +316,105 @@ bool TypeChecker::visit(const StructState &astnode) {
     m_type = ty;
     return true;
 }
+
+
+bool TypeChecker::visit(const MemberExpr &astnode){
+    astnode.leftid()->accept(*this);
+    if(astnode.mem_operator() == DOT){
+        if(m_type == NULL){
+            //todo
+        }
+        if(m_type->type() == TYPE_STRUCT) {
+            auto ty = std::dynamic_pointer_cast<StructType>(m_type);
+            std::string n = identifier(astnode.rightid());
+            if(!ty->contain(n)){
+                //todo
+            }
+            m_type = ty->getMem(n);
+        }
+    } else if(astnode.mem_operator() == ARROW){
+        if(m_type == NULL){
+            //todo
+        }
+        if(m_type->type() == TYPE_POINTER) {
+            auto ty1 = std::dynamic_pointer_cast<Pointer>(m_type);
+            if(ty1->baseType()->type() != TYPE_STRUCT){
+                //todo
+            }
+            auto ty2 = std::dynamic_pointer_cast<StructType>(ty1->baseType());
+            std::string n = identifier(astnode.rightid());
+            if(!ty2->contain(n)){
+                //todo
+            }
+            m_type = ty2->getMem(n);
+        }
+    }
+    return true;
+}
+
+bool TypeChecker::visit(const ArrayType& astnode) {
+    astnode.arraytype()->accept(*this);
+    std::vector<std::string>s;
+    TypePtr ty; 
+    if(m_type == NULL) {
+        //todo
+    }else{
+        ty = m_type;
+        if(astnode.arraysize().empty()){
+            //todo
+        }else{
+            for(int i = 0 ; i < astnode.arraysize().size(); i++){
+                astnode.arraysize()[i]->accept(*this);
+                if(!m_type){
+                    //todo
+                }
+                if(m_type->type() == TYPE_INT){
+                    astnode.arraysize()[i]->toString();
+                }
+            }
+        }
+    }
+    m_type = TypeGenerator::ArrayTyGen(ty);
+    return true;
+}
+
+bool TypeChecker::visit(const IndexExpr& astnode ) {
+    astnode.identifier()->accept(*this);
+    if(m_type->type() != TYPE_ARRAY) {
+        //todo
+    }else {
+        auto arr = std::dynamic_pointer_cast<Array>(m_type);
+        
+        
+    }
+}
+
+bool TypeChecker::visit(const Tuple& astnode) {
+    if(astnode.isTupleType()){
+        std::vector<TypePtr>ty;
+        if(!astnode.tupleEle().empty()){
+            for(int i = 0 ; i < astnode.tupleEle().size(); i++){
+                astnode.tupleEle()[i]->accept(*this);
+                if(!m_type){
+                    //todo
+                }
+                ty.push_back(m_type);
+            }
+        }
+        m_type = TypeGenerator::TupleTyGen(ty);
+    }else {
+        if(!astnode.tupleEle().empty()){
+            for(int i = 0 ; i < astnode.tupleEle().size(); i++){
+                astnode.tupleEle()[i]->accept(*this);
+                if(!m_type){
+                    //todo
+                }
+                if(m_type->)
+            }
+        }
+    }
+}
+
 
 }
  

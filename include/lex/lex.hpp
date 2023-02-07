@@ -17,6 +17,7 @@ namespace lex
         IDEN,
 
         EXTERN,
+        WHILE,
         AS,
         IN,
         USE,
@@ -48,19 +49,17 @@ namespace lex
         F64,
 
         ASSN,
-        ADD,
-        SUB,
-        MUL,
+        PLUS,
+        MINUS,
+        STAR,
         DIV,
         MOD,
-        ASSN_ADD,
-        ASSN_MUL,
-        ASSN_SUB,
+        ASSN_PLUS,
+        ASSN_STAR,
+        ASSN_MINUS,
         ASSN_DIV,
         ASSN_MOD,
 
-        // INC,
-        // DEC,
 
         AND,
         OR,

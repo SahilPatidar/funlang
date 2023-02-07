@@ -16,6 +16,7 @@ const enum KindType {
     TYPE_ARRAY,
     TYPE_CONST,
     TYPE_FUNCTION,
+    TYPE_TUPLE
 };
 
 
@@ -125,7 +126,11 @@ public:
             return false;
         }
     }
-
+    TypePtr getMem(std::string n){
+        if(contain(n)){
+            return mem[n];
+        }
+    }
     bool OperatorMatch(lex::Token_type op, const TypePtr type);
     bool UnaryOpMatch(lex::Token_type op);
     KindType type() const { return TYPE_STRUCT; }
@@ -135,13 +140,26 @@ public:
 
 class Array: public Type{
 private:
-
+    TypePtr base;
+    //std::vector<std::string>size;
 public:
-
+    TypePtr arrType() const { return base; }
+    //std::vector<std::string> arrSize() const { return size; }
     bool OperatorMatch(lex::Token_type op, const TypePtr type);
     bool UnaryOpMatch(lex::Token_type op);
     KindType type() const { return TYPE_ARRAY; }
+};
 
+class TupleType: public Type{
+private:
+    std::vector<TypePtr>type;
+public:
+    TupleType(std::vector<TypePtr>&ty)
+    :type(ty) {}
+    std::vector<TypePtr> tupleTy() const { return type; }
+    bool OperatorMatch(lex::Token_type op, const TypePtr type);
+    bool UnaryOpMatch(lex::Token_type op);
+    KindType type() const { return TYPE_ARRAY; }
 };
 
 class Pointer: public Type{
@@ -169,6 +187,8 @@ class TypeGenerator{
     static TypePtr Boolean();
     static TypePtr Decimal();
     static TypePtr String();
+    static TypePtr TupleTyGen(std::vector<TypePtr>&ty);
+    static TypePtr ArrayTyGen(TypePtr &base);
     static TypePtr StructTyGen(std::map<std::string, TypePtr>&_ele);
     static TypePtr FuncTypeGenerate(std::vector<TypePtr>&p_type, TypePtr r_type);
     static TypePtr Generate(KindType type);
